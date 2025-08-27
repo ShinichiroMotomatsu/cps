@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>事業計画 策定方針 / Business Plan Policy</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .presentation {
+            width: 1024px;
+            height: 768px;
+            border: 1px solid #ccc;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            position: relative;
+            overflow: hidden;
+            background-color: #fff;
+        }
+        .slide {
+            width: 100%;
+            height: 100%;
+            padding: 40px 60px;
+            box-sizing: border-box;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        .slide.active {
+            display: flex;
+            opacity: 1;
+            z-index: 1;
+        }
+        .slide-header {
+            width: 100%;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #005bac;
+            margin-bottom: 30px;
+            text-align: left;
+            position: absolute;
+            top: 40px;
+            left: 60px;
+            width: calc(100% - 120px);
+        }
+        .slide-header h2 {
+            font-size: 24px;
+            color: #005bac;
+            margin: 0;
+        }
+        .slide-content {
+            width: 100%;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        h1 { font-size: 48px; color: #003366; margin: 0; text-align: center; }
+        h3 { font-size: 28px; color: #003366; margin-top: 20px; margin-bottom: 20px; border-left: 5px solid #005bac; padding-left: 15px; }
+        p { font-size: 18px; line-height: 1.8; }
+        ul { font-size: 18px; line-height: 1.8; width: 100%; padding-left: 20px; }
+        li { margin-bottom: 10px; }
+        .navigation { position: fixed; bottom: 20px; right: 20px; z-index: 100; display: flex; gap: 10px; }
+        .nav-button { background-color: #005bac; color: white; border: none; padding: 10px 20px; font-size: 16px; border-radius: 5px; cursor: pointer; transition: background-color 0.3s; }
+        .nav-button:hover { background-color: #003366; }
+        .page-number { position: fixed; bottom: 20px; left: 20px; z-index: 100; font-size: 16px; color: #555; }
+        .title-slide h1 { font-size: 44px; margin-bottom: 20px; }
+        .title-slide h2 { font-size: 24px; color: #555; margin: 0; }
+        .two-column { display: flex; gap: 40px; width: 100%; }
+        .column { flex: 1; }
+        .box { border: 1px solid #ddd; border-radius: 8px; padding: 20px; background-color: #f9f9f9; height: 100%; }
+        .box h4 { margin-top: 0; font-size: 20px; color: #005bac; }
+        .arrow { display: flex; align-items: center; justify-content: center; font-size: 40px; color: #005bac; }
+        .kpi-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .kpi-table th, .kpi-table td { border: 1px solid #ccc; padding: 12px; text-align: left; font-size: 16px; }
+        .kpi-table th { background-color: #eaf2f8; color: #003366; }
+        .highlight { color: #d9534f; font-weight: bold; }
+        .check { color: #5cb85c; font-weight: bold; }
+        .svg-container { width: 100%; text-align: center; margin-top: 20px; }
+
+        /* Language Switcher */
+        .lang-toggle { position: fixed; top: 20px; right: 20px; z-index: 100; background-color: #fff; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .lang-btn { background: none; border: none; padding: 10px 15px; font-size: 14px; cursor: pointer; color: #888; }
+        .lang-btn.active { color: #fff; background-color: #005bac; font-weight: bold; }
+        .lang-en { display: none; }
+        .show-jp .lang-jp { display: initial; }
+        .show-jp .lang-en { display: none; }
+        .show-en .lang-en { display: initial; }
+        .show-en .lang-jp { display: none; }
+
+        /* Image style */
+        .slide-image {
+            max-width: 100%;
+            max-height: 550px;
+            object-fit: contain;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body class="show-jp">
+    <div class="presentation">
+        <div class="slide active title-slide">
+            <div class="slide-content">
+                <h1>
+                    <span class="lang-jp">次年度事業計画および中期経営計画<br>策定方針のご説明</span>
+                    <span class="lang-en">Next FY Business Plan and<br>Mid-Term Management Plan Policy</span>
+                </h1>
+                <h2 style="text-align:center; margin-top: 50px;">
+                    <span class="lang-jp">2025年8月27日</span>
+                    <span class="lang-en">August 27, 2025</span>
+                </h2>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-header">
+                <h2>
+                    <span class="lang-jp">1-1. 本日のアジェンダと目的</span>
+                    <span class="lang-en">1-1. Today's Agenda and Objectives</span>
+                </h2>
+            </div>
+            <div class="slide-content">
+                <h3>
+                    <span class="lang-jp">目的</span>
+                    <span class="lang-en">Objectives</span>
+                </h3>
+                <p>
+                    <span class="lang-jp">精度の高い事業計画（PL）を策定・実行する体制を構築し、持続的成長の基盤となる中期経営計画の策定準備を行う。</span>
+                    <span class="lang-en">To establish a framework for formulating and executing a high-precision business plan (P&L), and to prepare for the formulation of a mid-term management plan that will serve as the foundation for sustainable growth.</span>
+                </p>
+                <h3 style="margin-top: 40px;">
+                    <span class="lang-jp">アジェンダ</span>
+                    <span class="lang-en">Agenda</span>
+                </h3>
+                <ol style="font-size: 20px; line-height: 2.2; padding-left: 30px;">
+                    <li><b>
+                        <span class="lang-jp">次年度事業計画（PL）策定方針</span>
+                        <span class="lang-en">Next FY Business Plan (P&L) Formulation Policy</span>
+                    </b></li>
+                    <li><b>
+                        <span class="lang-jp">中期経営計画（3ヶ年）の策定準備</span>
+                        <span class="lang-en">Preparation for 3-Year Mid-Term Management Plan</span>
+                    </b></li>
+                    <li><b>
+                        <span class="lang-jp">今後のアクションプラン</span>
+                        <span class="lang-en">Future Action Plan</span>
+                    </b></li>
+                </ol>
+            </div>
+        </div>
+        
+        <div class="slide">
+            <div class="slide-header"><h2>
+                <span class="lang-jp">2-1. 次年度事業計画（PL）の目指す姿</span>
+                <span class="lang-en">2-1. The Desired State of the Next FY Business Plan (P&L)</span>
+            </h2></div>
+            <div class="slide-content">
+                <div class="two-column">
+                    <div class="column box">
+                        <h4>BEFORE (<span class="lang-jp">現状</span><span class="lang-en">Current State</span>)</h4>
+                        <ul>
+                            <li><span class="lang-jp">営業KPI中心の目標管理</span><span class="lang-en">Goal management centered on sales KPIs</span></li>
+                            <li><span class="lang-jp">一部売上（<span class="highlight">強制課金等</span>）が計画外</span><span class="lang-en">Some revenue (e.g., from <span class="highlight">forced billing</span>) is unplanned</span></li>
+                            <li><span class="lang-jp">費用は実績ベースでの管理が中心</span><span class="lang-en">Expenses mainly managed based on actuals</span></li>
+                            <li><span class="lang-jp"><span class="highlight">→ 投資判断が場当たり的になるリスク</span></span><span class="lang-en"><span class="highlight">→ Risk of ad-hoc investment decisions</span></span></li>
+                        </ul>
+                    </div>
+                    <div class="column arrow"><span>&#10140;</span></div>
+                    <div class="column box">
+                        <h4>AFTER (<span class="lang-jp">次年度</span><span class="lang-en">Next FY</span>)</h4>
+                        <ul>
+                            <li><span class="lang-jp">PL計画中心の事業運営</span><span class="lang-en">Business operations centered on P&L plan</span></li>
+                            <li><span class="lang-jp">売上を100%計画に織り込み</span><span class="lang-en">Incorporate 100% of revenue into the plan</span></li>
+                            <li><span class="lang-jp">費用を戦略的に計画・投下</span><span class="lang-en">Strategically plan and allocate expenses</span></li>
+                            <li><span class="lang-jp"><span class="check">→ 精度の高い予実管理の実現</span></span><span class="lang-en"><span class="check">→ Achieve high-precision budget vs. actuals management</span></span></li>
+                            <li><span class="lang-jp"><span class="check">→ 投資対効果の最大化</span></span><span class="lang-en"><span class="check">→ Maximize return on investment</span></span></li>
+                        </ul>
+                    </div>
+                </div>
+                 <div class="svg-container">
+                    <svg width="800" height="150" viewBox="0 0 800 150">
+                        <defs><marker id="arrowhead" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#005bac" /></marker></defs>
+                        <text x="120" y="30" font-size="20" text-anchor="middle"><tspan class="lang-jp">事業活動</tspan><tspan class="lang-en">Business Activities</tspan></text>
+                        <text x="400" y="30" font-size="20" text-anchor="middle">KPI</text>
+                        <text x="680" y="30" font-size="20" text-anchor="middle"><tspan class="lang-jp">PL計画</tspan><tspan class="lang-en">P&L Plan</tspan></text>
+                        <rect x="20" y="50" width="200" height="50" rx="10" fill="#eaf2f8" stroke="#005bac" /><text x="120" y="80" font-size="16" text-anchor="middle"><tspan class="lang-jp">採用,開発,マーケ,営業</tspan><tspan class="lang-en">Hiring, Dev, Mktg, Sales</tspan></text>
+                        <rect x="300" y="50" width="200" height="50" rx="10" fill="#eaf2f8" stroke="#005bac" /><text x="400" y="80" font-size="16" text-anchor="middle">MRR, CAC, LTV, Churn...</text>
+                        <rect x="580" y="50" width="200" height="50" rx="10" fill="#d4edda" stroke="#155724" /><text x="680" y="80" font-size="16" text-anchor="middle"><tspan class="lang-jp">売上、費用、利益</tspan><tspan class="lang-en">Revenue, Cost, Profit</tspan></text>
+                        <line x1="225" y1="75" x2="295" y2="75" stroke="#005bac" stroke-width="2" marker-end="url(#arrowhead)" /><line x1="505" y1="75" x2="575" y2="75" stroke="#005bac" stroke-width="2" marker-end="url(#arrowhead)" />
+                        <text x="400" y="130" font-size="18" text-anchor="middle" fill="#003366"><tspan class="lang-jp">全ての事業活動をKPIを通じてPL計画に連動させる</tspan><tspan class="lang-en">Link all business activities to the P&L plan through KPIs</tspan></text>
+                    </svg>
+                 </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-header"><h2><span class="lang-jp">2-2. 売上計画の策定：KPIを起点としたトップライン計画の精緻化</span><span class="lang-en">2-2. Sales Plan: Refining the Top-line Plan Based on KPIs</span></h2></div>
+            <div class="slide-content">
+                <h3><span class="lang-jp">次年度の取り組み：売上構成要素を分解し、100%計画化を目指す</span><span class="lang-en">Next FY Initiative: Decompose revenue components to achieve 100% planning</span></h3>
+                <p><span class="lang-jp">特に、<span class="highlight">新規営業採用数</span>と<span class="highlight">一人当たり生産性</span>が新規MRRの先行指標となるモデルを構築します。</span><span class="lang-en">We will build a model where <span class="highlight">new sales hires</span> and <span class="highlight">productivity per person</span> are leading indicators for New MRR.</span></p>
+                <div class="svg-container">
+                    <svg width="900" height="400" viewBox="0 0 900 400">
+                         <defs><marker id="arrowhead2" markerWidth="8" markerHeight="6" refX="0" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#333" /></marker></defs>
+                        <text x="150" y="50" font-size="18" font-weight="bold" text-anchor="middle">【<tspan class="lang-jp">新規顧客MRR</tspan><tspan class="lang-en">New Customer MRR</tspan>】</text>
+                        <rect x="50" y="80" width="200" height="50" rx="5" fill="#f0f8ff" stroke="#4682b4"/><text x="150" y="110" font-size="15" text-anchor="middle"><tspan class="lang-jp">新規営業採用数</tspan><tspan class="lang-en">New Sales Hires</tspan></text>
+                        <line x1="150" y1="130" x2="150" y2="160" stroke="#333" stroke-width="1.5" marker-end="url(#arrowhead2)" />
+                        <rect x="50" y="160" width="200" height="50" rx="5" fill="#f0f8ff" stroke="#4682b4"/><text x="150" y="190" font-size="15" text-anchor="middle"><tspan class="lang-jp">期中平均営業人員数</tspan><tspan class="lang-en">Avg. Sales Headcount</tspan></text>
+                        <line x1="150" y1="210" x2="150" y2="240" stroke="#333" stroke-width="1.5" marker-end="url(#arrowhead2)" />
+                        <rect x="50" y="240" width="200" height="50" rx="5" fill="#f0f8ff" stroke="#4682b4"/><text x="150" y="260" font-size="14" text-anchor="middle"><tspan class="lang-jp">× 営業一人当たり生産性</tspan><tspan class="lang-en">x Productivity per Sales</tspan></text><text x="150" y="280" font-size="14" text-anchor="middle"><tspan class="lang-jp">（受注件数）</tspan><tspan class="lang-en">(No. of Deals)</tspan></text>
+                        <line x1="250" y1="185" x2="330" y2="185" stroke="#333" stroke-width="1.5" marker-end="url(#arrowhead2)" />
+                        <text x="650" y="50" font-size="18" font-weight="bold" text-anchor="middle">【<tspan class="lang-jp">既存顧客MRR</tspan><tspan class="lang-en">Existing Customer MRR</tspan>】</text>
+                        <rect x="550" y="80" width="200" height="50" rx="5" fill="#e6e6fa" stroke="#9370db"/><text x="650" y="110" font-size="15" text-anchor="middle"><tspan class="lang-jp">期首MRR</tspan><tspan class="lang-en">Beginning MRR</tspan></text>
+                        <path d="M 550 105 Q 450 105, 450 155" stroke="#333" stroke-width="1.5" fill="none" marker-end="url(#arrowhead2)"/><text x="500" y="145" font-size="14" fill="#c00">- Churn MRR</text><text x="505" y="120" font-size="14" fill="#c00">(Churn Rate)</text>
+                        <path d="M 750 105 Q 830 150, 780 230" stroke="#333" stroke-width="1.5" fill="none" marker-end="url(#arrowhead2)"/><text x="780" y="170" font-size="14" fill="#008000">+ Expansion MRR</text><text x="790" y="190" font-size="14" fill="#008000">(Upsell/Cross-sell)</text>
+                        <rect x="340" y="160" width="220" height="50" rx="5" fill="#f5fff5" stroke="#2e8b57"/><text x="450" y="180" font-size="15" text-anchor="middle"><tspan class="lang-jp">新規顧客獲得数</tspan><tspan class="lang-en">New Customers Acquired</tspan></text><text x="450" y="200" font-size="15" text-anchor="middle"><tspan class="lang-jp">× 新規顧客単価</tspan><tspan class="lang-en">x New Customer ACV</tspan></text>
+                        <line x1="450" y1="210" x2="450" y2="280" stroke="#333" stroke-width="1.5" marker-end="url(#arrowhead2)" /><line x1="650" y1="130" x2="650" y2="280" stroke="#333" stroke-width="1.5" /><line x1="650" y1="280" x2="450" y2="280" stroke="#333" stroke-width="1.5" marker-end="url(#arrowhead2)" />
+                        <rect x="340" y="310" width="220" height="60" rx="10" fill="#fffacd" stroke="#ffd700" stroke-width="2"/><text x="450" y="345" font-size="20" text-anchor="middle" font-weight="bold"><tspan class="lang-jp">期末Total MRR</tspan><tspan class="lang-en">Ending Total MRR</tspan></text>
+                    </svg>
+                </div>
+            </div>
+        </div>
+        
+        <div class="slide">
+            <div class="slide-header"><h2><span class="lang-jp">2-3. 費用計画の策定：投資対効果の最大化</span><span class="lang-en">2-3. Expense Plan: Maximizing Return on Investment</span></h2></div>
+            <div class="slide-content">
+                <h3><span class="lang-jp">なぜ費用計画が必要か？</span><span class="lang-en">Why is an Expense Plan necessary?</span></h3>
+                <p><span class="lang-jp">SaaSビジネスにおける先行投資（CAC）と、その回収（LTV）のバランスを最適化する上で、費用計画は不可欠です。</span><span class="lang-en">An expense plan is essential for optimizing the balance between upfront investment (CAC) and its return (LTV) in the SaaS business.</span></p>
+                <h3 style="margin-top: 30px;"><span class="lang-jp">費用計画策定の2ステップ</span><span class="lang-en">2-Step Expense Planning Process</span></h3>
+                <div class="two-column" style="margin-top: 20px;">
+                    <div class="column box">
+                        <h4><span class="lang-jp">ステップ① 人件費計画</span><span class="lang-en">Step 1: Personnel Cost Plan</span></h4>
+                        <p><span class="lang-jp">事業戦略を人員数に落とし込み、採用計画と連動した人件費を算出します。</span><span class="lang-en">Calculate personnel costs based on the headcount plan derived from the business strategy.</span></p>
+                    </div>
+                    <div class="column box">
+                        <h4><span class="lang-jp">ステップ② その他経費計画</span><span class="lang-en">Step 2: Other Expense Plan</span></h4>
+                        <p><span class="lang-jp">事業活動に連動する変動費と、事業基盤となる固定費に分けて計画します。</span><span class="lang-en">Plan variable costs linked to business activities and fixed costs for the business foundation separately.</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-header"><h2><span class="lang-jp">2-3. ステップ① 人件費計画：事業戦略と人員計画の連動</span><span class="lang-en">2-3. Step 1: Personnel Cost Plan - Linking Strategy to Headcount</span></h2></div>
+            <div class="slide-content">
+                 <div class="svg-container">
+                     <svg width="900" height="450" viewBox="0 0 900 450">
+                        <text x="450" y="40" text-anchor="middle" font-size="22"><tspan class="lang-jp">事業戦略を起点とした人員・人件費計画策定フロー</tspan><tspan class="lang-en">Personnel & Cost Planning Flow Based on Business Strategy</tspan></text>
+                        <rect x="50" y="80" width="180" height="80" rx="10" fill="#eaf2f8" stroke="#005bac"/><text x="140" y="110" text-anchor="middle" font-size="16" font-weight="bold"><tspan class="lang-jp">1. 事業目標設定</tspan><tspan class="lang-en">1. Set Business Goals</tspan></text><text x="140" y="135" text-anchor="middle" font-size="14">(e.g., New MRR +X)</text>
+                        <line x1="230" y1="120" x2="260" y2="120" stroke="#333" stroke-width="2" marker-end="url(#arrowhead2)"/>
+                        <rect x="260" y="80" width="180" height="80" rx="10" fill="#eaf2f8" stroke="#005bac"/><text x="350" y="110" text-anchor="middle" font-size="16" font-weight="bold"><tspan class="lang-jp">2. 必要人員数算出</tspan><tspan class="lang-en">2. Calc. Required HC</tspan></text><text x="350" y="135" text-anchor="middle" font-size="14">(e.g., Sales X, CS Y)</text>
+                        <line x1="440" y1="120" x2="470" y2="120" stroke="#333" stroke-width="2" marker-end="url(#arrowhead2)"/>
+                        <rect x="470" y="80" width="180" height="80" rx="10" fill="#eaf2f8" stroke="#005bac"/><text x="560" y="110" text-anchor="middle" font-size="16" font-weight="bold"><tspan class="lang-jp">3. 職種別人員計画</tspan><tspan class="lang-en">3. Headcount Plan</tspan></text><text x="560" y="135" text-anchor="middle" font-size="14"><tspan class="lang-jp">(採用/退職計画)</tspan><tspan class="lang-en">(Hiring/Attrition)</tspan></text>
+                        <line x1="650" y1="120" x2="680" y2="120" stroke="#333" stroke-width="2" marker-end="url(#arrowhead2)"/>
+                        <rect x="680" y="80" width="180" height="80" rx="10" fill="#d4edda" stroke="#155724"/><text x="770" y="110" text-anchor="middle" font-size="16" font-weight="bold"><tspan class="lang-jp">4. 人件費算出</tspan><tspan class="lang-en">4. Calc. Personnel Cost</tspan></text><text x="770" y="135" text-anchor="middle" font-size="14">(HC Plan x Avg. Cost)</text>
+                        <foreignObject x="50" y="200" width="800" height="250">
+                             <div xmlns="http://www.w3.org/1999/xhtml">
+                                <p style="font-weight: bold; font-size: 18px;">【<span class="lang-jp">人員計画（例）</span><span class="lang-en">Headcount Plan (Example)</span>】</p>
+                                <table class="kpi-table" style="font-size: 14px;">
+                                    <thead>
+                                        <tr>
+                                            <th><span class="lang-jp">職種</span><span class="lang-en">Role</span></th><th><span class="lang-jp">期首</span><span class="lang-en">Start</span></th><th><span class="lang-jp">採用</span><span class="lang-en">Hires</span>(+)</th><th><span class="lang-jp">退職</span><span class="lang-en">Attrition</span>(-)</th><th><span class="lang-jp">期末</span><span class="lang-en">End</span></th><th><span class="lang-jp">期中平均</span><span class="lang-en">Avg.</span></th><th><span class="lang-jp">標準人件費</span><span class="lang-en">Avg. Cost</span></th><th><span class="lang-jp">計画人件費</span><span class="lang-en">Planned Cost</span></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td><span class="lang-jp">営業</span><span class="lang-en">Sales</span></td><td>50</td><td style="background-color: #fffacd;">10</td><td>2</td><td>58</td><td>54.0</td><td>¥8.0M</td><td>¥432.0M</td></tr>
+                                        <tr><td><span class="lang-jp">開発</span><span class="lang-en">Product/Dev</span></td><td>80</td><td style="background-color: #fffacd;">15</td><td>5</td><td>90</td><td>85.0</td><td>¥9.0M</td><td>¥765.0M</td></tr>
+                                        <tr><td>...</td><td>...</td><td>...</td><td>...</td><td>...</td><td>...</td><td>...</td><td>...</td></tr>
+                                         <tr><td><b><span class="lang-jp">合計</span><span class="lang-en">Total</span></b></td><td><b>200</b></td><td><b>XX</b></td><td><b>XX</b></td><td><b>XXX</b></td><td><b>XXX</b></td><td></td><td><b>¥X,XXX M</b></td></tr>
+                                    </tbody>
+                                </table>
+                             </div>
+                        </foreignObject>
+                     </svg>
+                 </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-header"><h2><span class="lang-jp">2-3. 【参考】200名規模SaaS企業の職種構成例</span><span class="lang-en">2-3. [Ref] Sample Role Composition for a 200-Person SaaS Co.</span></h2></div>
+            <div class="slide-content">
+                 <div class="two-column">
+                    <div class="column">
+                        <h3>Go-to-Market (GTM)</h3>
+                        <p style="margin:0;font-size:16px;"><span class="lang-jp">構成比: 40-50% (例: 90名)</span><span class="lang-en">Ratio: 40-50% (e.g., 90 people)</span></p>
+                        <table class="kpi-table">
+                            <tr><th>Marketing (10)</th><td><span class="lang-jp">リード創出</span><span class="lang-en">Lead Gen</span></td></tr>
+                            <tr><th>Inside Sales (20)</th><td><span class="lang-jp">商談化</span><span class="lang-en">Qualification (SDR)</span></td></tr>
+                            <tr><th>Field Sales (40)</th><td><span class="lang-jp">クロージング</span><span class="lang-en">Closing (AE)</span></td></tr>
+                            <tr><th>Customer Success (20)</th><td><span class="lang-jp">LTV最大化</span><span class="lang-en">LTV Maximization</span></td></tr>
+                        </table>
+                    </div>
+                    <div class="column">
+                        <h3><span class="lang-jp">プロダクト</span><span class="lang-en">Product & R&D</span></h3>
+                        <p style="margin:0;font-size:16px;"><span class="lang-jp">構成比: 30-40% (例: 70名)</span><span class="lang-en">Ratio: 30-40% (e.g., 70 people)</span></p>
+                        <table class="kpi-table">
+                            <tr><th>Product Manager (8)</th><td><span class="lang-jp">製品戦略</span><span class="lang-en">Product Strategy</span></td></tr>
+                            <tr><th>Engineer (55)</th><td><span class="lang-jp">開発・運用</span><span class="lang-en">Dev/Ops</span></td></tr>
+                            <tr><th>Designer (7)</th><td><span class="lang-jp">UI/UX設計</span><span class="lang-en">UI/UX Design</span></td></tr>
+                        </table>
+                    </div>
+                </div>
+                <div style="width: 100%; margin-top: 30px;">
+                    <h3><span class="lang-jp">コーポレート (G&A)</span><span class="lang-en">General & Administration (G&A)</span></h3>
+                     <p style="margin:0;font-size:16px;"><span class="lang-jp">構成比: 10-20% (例: 40名)</span><span class="lang-en">Ratio: 10-20% (e.g., 40 people)</span></p>
+                    <table class="kpi-table">
+                        <tr><th><span class="lang-jp">経営管理/財務 (10)</span><span class="lang-en">FP&A/Finance (10)</span></th><td><span class="lang-jp">経営計画、予実管理</span><span class="lang-en">Planning, Budgeting</span></td></tr>
+                        <tr><th><span class="lang-jp">人事/採用 (15)</span><span class="lang-en">HR/Talent Acq. (15)</span></th><td><span class="lang-jp">採用、組織開発</span><span class="lang-en">Hiring, Org Dev</span></td></tr>
+                        <tr><th><span class="lang-jp">法務/情シス等 (15)</span><span class="lang-en">Legal/IT etc. (15)</span></th><td><span class="lang-jp">バックオフィス</span><span class="lang-en">Back Office</span></td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+             <div class="slide-header"><h2><span class="lang-jp">【参考】売上生産性と人数構成例</span><span class="lang-en">[Ref] Example of Sales Productivity and Headcount Composition</span></h2></div>
+             <div class="slide-content">
+                <img src="rakus_sample.jpg" alt="Sales Productivity and Headcount Composition Example" class="slide-image">
+             </div>
+        </div>
+        
+        <div class="slide">
+            <div class="slide-header"><h2><span class="lang-jp">2-3. ステップ② その他経費計画：事業活動との連動</span><span class="lang-en">2-3. Step 2: Other Expense Plan - Linking to Business Activities</span></h2></div>
+            <div class="slide-content">
+                <h3><span class="lang-jp">主要経費を変動費・固定費に分解し、計画ロジックを明確化</span><span class="lang-en">Clarify planning logic by separating expenses into variable and fixed costs</span></h3>
+                <div class="two-column">
+                    <div class="column">
+                        <h3><span class="lang-jp">変動費 (事業規模連動)</span><span class="lang-en">Variable Costs (Scale-dependent)</span></h3>
+                        <table class="kpi-table">
+                           <thead><tr><th><span class="lang-jp">費目</span><span class="lang-en">Item</span></th><th><span class="lang-jp">計画ロジック</span><span class="lang-en">Planning Logic</span></th></tr></thead>
+                           <tbody>
+                               <tr><td><b><span class="lang-jp">サーバー費用</span><span class="lang-en">Server Costs</span></b></td><td><span class="lang-jp">ユーザー数予測に基づき算出</span><span class="lang-en">Based on user forecasts</span></td></tr>
+                               <tr><td><b><span class="lang-jp">広告宣伝費</span><span class="lang-en">Ad Spend</span></b></td><td><span class="lang-jp">目標リード数 × 目標CPL</span><span class="lang-en">Target Leads x Target CPL</span></td></tr>
+                               <tr><td><b><span class="lang-jp">決済手数料</span><span class="lang-en">Payment Fees</span></b></td><td><span class="lang-jp">売上計画 × 料率</span><span class="lang-en">Revenue Plan x Rate</span></td></tr>
+                           </tbody>
+                        </table>
+                    </div>
+                    <div class="column">
+                        <h3><span class="lang-jp">固定費 (事業基盤)</span><span class="lang-en">Fixed Costs (Foundation)</span></h3>
+                        <table class="kpi-table">
+                           <thead><tr><th><span class="lang-jp">費目</span><span class="lang-en">Item</span></th><th><span class="lang-jp">計画ロジック</span><span class="lang-en">Planning Logic</span></th></tr></thead>
+                           <tbody>
+                               <tr><td><b><span class="lang-jp">採用費</span><span class="lang-en">Hiring Costs</span></b></td><td><span class="lang-jp">採用計画人数 × 一人当たり採用単価</span><span class="lang-en">Hiring Plan x Cost per Hire</span></td></tr>
+                               <tr><td><b><span class="lang-jp">ソフトウェア利用料</span><span class="lang-en">Software Licenses</span></b></td><td><span class="lang-jp">人員計画 × 一人当たり費用</span><span class="lang-en">Headcount Plan x Cost per Head</span></td></tr>
+                               <tr><td><b><span class="lang-jp">オフィス賃料</span><span class="lang-en">Office Rent</span></b></td><td><span class="lang-jp">契約内容に基づき算出</span><span class="lang-en">Based on contract</span></td></tr>
+                           </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-header"><h2><span class="lang-jp">3-1. なぜ今、中期経営計画が必要か？</span><span class="lang-en">3-1. Why is a Mid-Term Management Plan necessary now?</span></h2></div>
+            <div class="slide-content">
+                 <div class="svg-container" style="margin-top:0; height: 100%;">
+                    <svg width="900" height="700" viewBox="0 0 900 700">
+                        <rect x="50" y="55" width="800" height="150" rx="10" fill="#f0f8ff" stroke="#4682b4"/>
+                        <text x="450" y="90" text-anchor="middle" font-size="22" font-weight="bold"><tspan class="lang-jp">目的１：羅針盤</tspan><tspan class="lang-en">Objective 1: A Compass</tspan></text>
+                        <foreignObject x="70" y="115" width="760" height="80">
+                          <p xmlns="http://www.w3.org/1999/xhtml" style="font-size:18px; line-height:1.7; text-align:center;">
+                            <span class="lang-jp">3-5年後の「ありたい姿」を明確化し、全社のベクトルを合わせる。</span>
+                            <span class="lang-en">To clarify the vision for 3-5 years from now and align the entire company's direction.</span>
+                          </p>
+                        </foreignObject>
+                        
+                        <rect x="50" y="225" width="800" height="255" rx="10" fill="#f5fff5" stroke="#2e8b57"/>
+                        <text x="450" y="260" text-anchor="middle" font-size="22" font-weight="bold"><tspan class="lang-jp">目的２：資源配分</tspan><tspan class="lang-en">Objective 2: Resource Allocation</tspan></text>
+                         <foreignObject x="70" y="285" width="760" height="180">
+                          <div xmlns="http://www.w3.org/1999/xhtml" style="font-size:16px;">
+                            <p style="margin-top:0; margin-bottom:10px; line-height:1.4;"><span class="lang-jp">未来の業績を達成するため、単年では完結しない取り組みを適切なタイミングで開始します。例えば、</span><span class="lang-en">To achieve future goals, it enables us to start multi-year initiatives at the right time. For example:</span></p>
+                            <ul style="padding-left:25px; margin-top:0; font-size:16px; line-height:1.5;">
+                                <li style="margin-bottom:15px;"><span class="lang-jp"><b>顧客単価向上:</b> 「3年後に単価向上」から逆算し、アドオン開発を次年度から開始。</span><span class="lang-en"><b>Increase ACV:</b> Backcast from a "3-year ACV goal" to start add-on development next year.</span></li>
+                                <li><span class="lang-jp"><b>組織拡大:</b> 「3年後に100名増員」を見据え、先行してHR組織の強化に着手。</span><span class="lang-en"><b>Org Scaling:</b> Plan for "+100 hires in 3 years" by starting to strengthen the HR org in advance.</span></li>
+                            </ul>
+                          </div>
+                        </foreignObject>
+
+                        <rect x="50" y="500" width="800" height="150" rx="10" fill="#fffacd" stroke="#b8860b"/>
+                        <text x="450" y="535" text-anchor="middle" font-size="22" font-weight="bold"><tspan class="lang-jp">目的３：企業価値向上</tspan><tspan class="lang-en">Objective 3: Enterprise Value</tspan></text>
+                        <foreignObject x="70" y="560" width="760" height="80">
+                          <p xmlns="http://www.w3.org/1999/xhtml" style="font-size:18px; line-height:1.7; text-align:center;">
+                            <span class="lang-jp">ステークホルダー（投資家、従業員）への成長ストーリーを提示する。</span>
+                            <span class="lang-en">To present a clear and compelling growth story to stakeholders (e.g., investors, employees).</span>
+                          </p>
+                        </foreignObject>
+                    </svg>
+                 </div>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-header"><h2><span class="lang-jp">3-2. 中計策定に向けた次年度の準備項目</span><span class="lang-en">3-2. Preparatory Items for Mid-Term Plan Formulation</span></h2></div>
+            <div class="slide-content">
+                <h3><span class="lang-jp">3ヶ年の骨太な計画を策定するため、次年度中に以下の分析・検討に着手します。</span><span class="lang-en">To formulate a robust 3-year plan, we will begin the following analysis next fiscal year.</span></h3>
+                <ul style="font-size:16px;">
+                    <li><b><span class="lang-jp">外部環境分析</span><span class="lang-en">External Analysis</span></b><p style="margin:0 0 0 15px;"><span class="lang-jp">市場規模 (TAM/SAM/SOM)、競合動向、技術トレンドの把握</span><span class="lang-en">Market size (TAM/SAM/SOM), competitor trends, technology trends</span></p></li>
+                    <li><b><span class="lang-jp">内部環境分析</span><span class="lang-en">Internal Analysis</span></b><p style="margin:0 0 0 15px;"><span class="lang-jp">自社プロダクトの強み・弱み、組織能力の客観的評価 (SWOT)</span><span class="lang-en">Objective evaluation of product strengths/weaknesses, organizational capabilities (SWOT)</span></p></li>
+                    <li><b><span class="lang-jp">ビジョン・ミッションの再定義</span><span class="lang-en">Redefine Vision & Mission</span></b><p style="margin:0 0 0 15px;"><span class="lang-jp">3年後の市場における自社のポジショニングと存在意義を言語化</span><span class="lang-en">Articulate our market positioning and purpose in 3 years</span></p></li>
+                    <li><b><span class="lang-jp">戦略シナリオの検討</span><span class="lang-en">Strategic Scenario Planning</span></b><p style="margin:0 0 0 15px;"><span class="lang-jp">事業ポートフォリオ（既存事業の深化、新規事業の探索）の検討</span><span class="lang-en">Examine business portfolio (deepen existing business, explore new ventures)</span></p></li>
+                    <li><b><span class="lang-jp">財務モデルの構築</span><span class="lang-en">Financial Modeling</span></b><p style="margin:0 0 0 15px;"><span class="lang-jp">各シナリオに基づいた3ヶ年のPL/BS/CFモデルを構築</span><span class="lang-en">Build 3-year P&L/BS/CF models for each scenario</span></p></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="slide">
+            <div class="slide-header"><h2><span class="lang-jp">4-1. まとめと今後のアクションプラン</span><span class="lang-en">4-1. Summary and Future Action Plan</span></h2></div>
+            <div class="slide-content">
+                <h3><span class="lang-jp">本日のまとめ</span><span class="lang-en">Summary</span></h3>
+                <div class="two-column">
+                    <div class="column">
+                        <p><b><span class="lang-jp">次年度事業計画 (PL)</span><span class="lang-en">Next FY Business Plan (P&L)</span></b></p>
+                        <ul>
+                            <li><span class="lang-jp">売上：KPI連動モデルを精緻化し、100%計画化を実現。</span><span class="lang-en">Revenue: Refine KPI-linked model to achieve 100% planning.</span></li>
+                            <li><span class="lang-jp">費用：事業戦略と連動した計画を新規に策定。</span><span class="lang-en">Expenses: Newly formulate a plan linked to business strategy.</span></li>
+                        </ul>
+                    </div>
+                    <div class="column">
+                        <p><b><span class="lang-jp">中期経営計画</span><span class="lang-en">Mid-Term Management Plan</span></b></p>
+                        <ul>
+                            <li><span class="lang-jp">次年度中に、土台となる分析・検討に着手。</span><span class="lang-en">Begin foundational analysis and studies during the next fiscal year.</span></li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <h3 style="margin-top: 40px;"><span class="lang-jp">今後のスケジュール案</span><span class="lang-en">Proposed Future Schedule</span></h3>
+                <div class="svg-container">
+                    <svg width="900" height="200" viewBox="0 0 900 200">
+                        <line x1="50" y1="100" x2="850" y2="100" stroke="#ccc" stroke-width="4"/>
+                        <circle cx="100" cy="100" r="10" fill="#005bac"/><text x="100" y="80" text-anchor="middle" font-size="14"><tspan class="lang-jp">情報収集</tspan><tspan class="lang-en">Info Gathering</tspan></text><text x="100" y="130" text-anchor="middle" font-size="14">~ Oct</text>
+                        <circle cx="300" cy="100" r="10" fill="#005bac"/><text x="300" y="80" text-anchor="middle" font-size="14"><tspan class="lang-jp">PL計画(初版)</tspan><tspan class="lang-en">P&L Draft 1</tspan></text><text x="300" y="130" text-anchor="middle" font-size="14">~ Nov</text>
+                        <circle cx="500" cy="100" r="10" fill="#005bac"/><text x="500" y="80" text-anchor="middle" font-size="14"><tspan class="lang-jp">レビュー＆修正</tspan><tspan class="lang-en">Review & Revise</tspan></text><text x="500" y="130" text-anchor="middle" font-size="14">~ Dec</text>
+                        <circle cx="700" cy="100" r="10" fill="#155724"/><text x="700" y="80" text-anchor="middle" font-size="14"><tspan class="lang-jp">次年度計画FIX</tspan><tspan class="lang-en">Finalize FY Plan</tspan></text><text x="700" y="130" text-anchor="middle" font-size="14">Jan</text>
+                        <circle cx="800" cy="100" r="10" fill="#d9534f"/><text x="800" y="70" text-anchor="middle" font-size="14"><tspan class="lang-jp">中計策定PJ</tspan><tspan class="lang-en">Mid-Term Plan</tspan></text><text x="800" y="90" text-anchor="middle" font-size="14">Kick Off</text><text x="800" y="130" text-anchor="middle" font-size="14">Feb ~</text>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="lang-toggle">
+        <button id="jpBtn" class="lang-btn active">JP</button>
+        <button id="enBtn" class="lang-btn">EN</button>
+    </div>
+    <div class="navigation">
+        <button id="prevBtn" class="nav-button">
+            <span class="lang-jp">戻る</span><span class="lang-en">Prev</span>
+        </button>
+        <button id="nextBtn" class="nav-button">
+            <span class="lang-jp">次へ</span><span class="lang-en">Next</span>
+        </button>
+    </div>
+    <div id="pageNumber" class="page-number"></div>
+
+    <script>
+        const slides = document.querySelectorAll('.slide');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const pageNumberDisplay = document.getElementById('pageNumber');
+        const jpBtn = document.getElementById('jpBtn');
+        const enBtn = document.getElementById('enBtn');
+        const body = document.body;
+        let currentSlide = 0;
+
+        function showSlide(index) {
+            slides.forEach((slide, i) => {
+                slide.classList.remove('active');
+                if (i === index) {
+                    slide.classList.add('active');
+                }
+            });
+            pageNumberDisplay.textContent = `${index + 1} / ${slides.length}`;
+            prevBtn.disabled = index === 0;
+            nextBtn.disabled = index === slides.length - 1;
+        }
+
+        prevBtn.addEventListener('click', () => {
+            if (currentSlide > 0) {
+                currentSlide--;
+                showSlide(currentSlide);
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentSlide < slides.length - 1) {
+                currentSlide++;
+                showSlide(currentSlide);
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' && currentSlide < slides.length - 1) {
+                nextBtn.click();
+            } else if (e.key === 'ArrowLeft' && currentSlide > 0) {
+                prevBtn.click();
+            }
+        });
+
+        jpBtn.addEventListener('click', () => {
+            body.classList.remove('show-en');
+            body.classList.add('show-jp');
+            jpBtn.classList.add('active');
+            enBtn.classList.remove('active');
+        });
+
+        enBtn.addEventListener('click', () => {
+            body.classList.remove('show-jp');
+            body.classList.add('show-en');
+            enBtn.classList.add('active');
+            jpBtn.classList.remove('active');
+        });
+
+        showSlide(currentSlide);
+    </script>
+</body>
+</html>
