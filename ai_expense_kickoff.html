@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI経費精算プロジェクト キックオフ</title>
+<style>
+  :root{
+    --bg:#0b1020;
+    --panel:#ffffff;
+    --ink:#0f172a;
+    --muted:#64748b;
+    --line:#e5e7eb;
+    --soft:#f6f7fb;
+    --primary:#4f46e5;
+    --primary-2:#7c3aed;
+    --cyan:#06b6d4;
+    --green:#10b981;
+    --amber:#f59e0b;
+    --pink:#ec4899;
+    --rule:#0ea5e9;
+    --ai:#7c3aed;
+    --human:#f97316;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:#0b1020;color:var(--ink);font-family:"Inter","Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic UI","Meiryo",sans-serif;-webkit-font-smoothing:antialiased}
+  .stage{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+  .deck{
+    position:relative;
+    width:1280px;height:720px;
+    background:var(--panel);
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:0 30px 80px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.06);
+  }
+  .slide{
+    position:absolute;inset:0;
+    padding:56px 72px 72px;
+    display:none;
+    flex-direction:column;
+    background:var(--panel);
+    animation:fade .35s ease;
+  }
+  .slide.active{display:flex}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  /* Header */
+  .head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+  .chip{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:.08em;color:#fff;background:linear-gradient(135deg,var(--primary),var(--primary-2));padding:6px 12px;border-radius:999px;text-transform:uppercase}
+  .chip.alt{background:linear-gradient(135deg,#0ea5e9,#06b6d4)}
+  .chip.warm{background:linear-gradient(135deg,#f59e0b,#ec4899)}
+  .crumb{font-size:12px;color:var(--muted);letter-spacing:.05em}
+  h1.title{font-size:44px;font-weight:800;letter-spacing:-.01em;color:#0b1020;margin:0 0 8px}
+  h1.title small{display:block;font-size:16px;font-weight:500;color:var(--muted);margin-top:10px;letter-spacing:0}
+  h2.sec{font-size:30px;font-weight:800;letter-spacing:-.01em;margin:0 0 8px;color:#0b1020}
+  .lede{font-size:15px;color:var(--muted);margin:0 0 22px;line-height:1.7;max-width:1000px}
+
+  /* Title slide */
+  .title-slide{justify-content:center;align-items:flex-start;background:
+    radial-gradient(900px 500px at 85% -10%,rgba(124,58,237,.18),transparent 60%),
+    radial-gradient(700px 400px at 0% 110%,rgba(6,182,212,.18),transparent 60%),
+    #ffffff;
+  }
+  .title-slide .eyebrow{font-size:13px;letter-spacing:.18em;color:var(--primary);font-weight:700;text-transform:uppercase;margin-bottom:18px}
+  .title-slide h1{font-size:68px;font-weight:900;letter-spacing:-.02em;line-height:1.05;margin:0;color:#0b1020}
+  .title-slide h1 .accent{background:linear-gradient(135deg,var(--primary),var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .title-slide .sub{font-size:20px;color:#334155;margin-top:22px;max-width:820px;line-height:1.6}
+  .title-slide .meta{margin-top:48px;display:flex;gap:32px;color:var(--muted);font-size:13px}
+  .title-slide .meta b{color:#0b1020;display:block;font-size:15px;margin-bottom:4px}
+
+  /* Cards & grids */
+  .grid{display:grid;gap:16px;width:100%}
+  .grid-2{grid-template-columns:1fr 1fr}
+  .grid-3{grid-template-columns:repeat(3,1fr)}
+  .grid-4{grid-template-columns:repeat(4,1fr)}
+  .card{background:var(--soft);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:8px}
+  .card h4{margin:0;font-size:15px;font-weight:700;color:#0b1020;display:flex;align-items:center;gap:8px}
+  .card p,.card li{margin:0;font-size:13.5px;line-height:1.65;color:#334155}
+  .card ul{padding-left:18px;margin:4px 0 0;display:flex;flex-direction:column;gap:4px}
+  .card .num{font-size:11px;font-weight:800;color:#fff;background:var(--primary);width:22px;height:22px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center}
+  .card.lift{background:#fff;box-shadow:0 1px 0 var(--line),0 8px 24px rgba(15,23,42,.04)}
+  .card.primary{background:linear-gradient(180deg,#eef2ff,#ffffff);border-color:#c7d2fe}
+  .card.cyan{background:linear-gradient(180deg,#ecfeff,#ffffff);border-color:#a5f3fc}
+  .card.amber{background:linear-gradient(180deg,#fff7ed,#ffffff);border-color:#fed7aa}
+  .card.pink{background:linear-gradient(180deg,#fdf2f8,#ffffff);border-color:#fbcfe8}
+
+  .kicker{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--primary)}
+  .kicker.cyan{color:#0891b2}
+  .kicker.amber{color:#b45309}
+  .kicker.pink{color:#be185d}
+  .kicker.green{color:#047857}
+
+  /* Footer / nav */
+  .foot{position:absolute;left:72px;right:72px;bottom:24px;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--muted)}
+  .foot .brand{font-weight:700;color:#0b1020;letter-spacing:.02em}
+  .foot .brand span{color:var(--primary)}
+  .pageno{font-variant-numeric:tabular-nums}
+
+  /* Controls (outside) */
+  .controls{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);display:flex;gap:8px;align-items:center;background:#0f172acc;backdrop-filter:blur(8px);padding:8px 12px;border-radius:999px;color:#fff;font-size:13px;z-index:50;border:1px solid #ffffff20}
+  .controls button{background:transparent;border:1px solid #ffffff30;color:#fff;border-radius:999px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:inherit}
+  .controls button:hover{background:#ffffff15}
+  .controls .pos{padding:0 8px;opacity:.85}
+
+  /* Generic */
+  .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .tag{font-size:11px;font-weight:600;padding:4px 8px;border-radius:6px;background:#eef2ff;color:#4338ca;border:1px solid #c7d2fe}
+  .tag.ai{background:#f3e8ff;color:#6d28d9;border-color:#e9d5ff}
+  .tag.rule{background:#e0f2fe;color:#0369a1;border-color:#bae6fd}
+  .tag.human{background:#ffedd5;color:#c2410c;border-color:#fed7aa}
+  .tag.dom{background:#dcfce7;color:#15803d;border-color:#bbf7d0}
+
+  .big{font-size:46px;font-weight:800;letter-spacing:-.02em;color:#0b1020}
+  .big .gradient{background:linear-gradient(135deg,var(--primary),var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .col-list{display:flex;flex-direction:column;gap:10px}
+  .item{display:flex;gap:12px;align-items:flex-start}
+  .dot{flex:0 0 8px;width:8px;height:8px;border-radius:50%;background:var(--primary);margin-top:8px}
+  .item.cyan .dot{background:var(--cyan)}
+  .item.amber .dot{background:var(--amber)}
+  .item.pink .dot{background:var(--pink)}
+  .item.green .dot{background:var(--green)}
+  .item p{margin:0;font-size:14px;line-height:1.65;color:#334155}
+  .item p b{color:#0b1020}
+
+  table.simple{width:100%;border-collapse:collapse;font-size:13px}
+  table.simple th,table.simple td{border-bottom:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top}
+  table.simple th{background:#f8fafc;color:#0b1020;font-weight:700;font-size:12px;letter-spacing:.04em;text-transform:uppercase}
+  table.simple td b{color:#0b1020}
+
+  /* TOC */
+  .toc-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;width:100%}
+  .toc-item{display:flex;gap:14px;align-items:flex-start;border:1px solid var(--line);background:#fff;border-radius:12px;padding:14px 16px}
+  .toc-item .n{font-size:11px;font-weight:800;color:var(--primary);letter-spacing:.08em}
+  .toc-item h5{margin:2px 0 0;font-size:14px;font-weight:700;color:#0b1020}
+  .toc-item p{margin:4px 0 0;font-size:12px;color:var(--muted);line-height:1.55}
+
+  /* Flow diagram */
+  .flow{display:grid;grid-template-columns:repeat(5,1fr) ;gap:10px;width:100%}
+  .step{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:6px;position:relative}
+  .step .label{font-size:12px;font-weight:700;color:#0b1020}
+  .step .who{display:flex;gap:4px;flex-wrap:wrap}
+  .step .desc{font-size:11.5px;color:#475569;line-height:1.5}
+  .arrow{display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:18px}
+
+  /* schedule */
+  .sched{position:relative;width:100%;padding:30px 0 0}
+  .sched .axis{height:2px;background:linear-gradient(90deg,#c7d2fe,#a5f3fc,#fde68a,#fbcfe8);border-radius:2px;position:relative;margin:0 8px}
+  .sched .pin{position:absolute;top:-10px;width:18px;height:18px;border-radius:50%;background:#fff;border:3px solid var(--primary);transform:translateX(-50%)}
+  .sched .pin.cyan{border-color:var(--cyan)}
+  .sched .pin.amber{border-color:var(--amber)}
+  .sched .pin.pink{border-color:var(--pink)}
+  .sched .labels{display:grid;grid-template-columns:repeat(4,1fr);margin-top:18px;gap:8px}
+  .sched .labels .blk{padding:12px;border:1px solid var(--line);border-radius:10px;background:#fff}
+  .sched .blk h6{margin:0;font-size:12px;color:var(--primary);letter-spacing:.06em;font-weight:800}
+  .sched .blk h5{margin:4px 0;font-size:14px;font-weight:700;color:#0b1020}
+  .sched .blk p{margin:0;font-size:12px;color:#475569;line-height:1.55}
+
+  /* Closing */
+  .closing{background:radial-gradient(900px 500px at 80% 120%,rgba(124,58,237,.22),transparent 60%),radial-gradient(700px 400px at 10% -20%,rgba(6,182,212,.18),transparent 60%),#0b1020;color:#fff}
+  .closing h2{color:#fff;font-size:44px;line-height:1.25;font-weight:900;letter-spacing:-.01em}
+  .closing h2 .gradient{background:linear-gradient(135deg,#a5b4fc,#67e8f9);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .closing p{color:#cbd5e1;font-size:17px;line-height:1.75;max-width:900px}
+  .closing .who{display:flex;gap:8px;margin-top:24px;flex-wrap:wrap}
+  .closing .who span{font-size:12px;font-weight:600;padding:6px 12px;border-radius:999px;background:#ffffff10;color:#fff;border:1px solid #ffffff25}
+  .closing .foot{color:#94a3b8}
+  .closing .foot .brand{color:#fff}
+
+  /* Small helpers */
+  .pad-y{padding:8px 0}
+  .legend{display:flex;gap:14px;font-size:11px;color:#475569;margin-top:8px}
+  .legend .sw{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:middle}
+  .sw.ai{background:#a78bfa}.sw.rule{background:#38bdf8}.sw.human{background:#fb923c}.sw.dom{background:#34d399}
+
+  .quote{border-left:4px solid var(--primary);padding:8px 14px;background:#eef2ff;border-radius:8px;color:#312e81;font-size:13.5px;line-height:1.65}
+
+  .mini{font-size:11px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="deck" id="deck">
+
+  <!-- 1. Title -->
+  <section class="slide title-slide active">
+    <div class="eyebrow">Project Kickoff / 2026.05</div>
+    <h1>AI経費精算<br>プロジェクト <span class="accent">キックオフ</span></h1>
+    <p class="sub">既存SaaSに「AIを組み込む」のではなく、<b>AIを前提に経費精算業務を再設計</b>する。<br>ラクスの次の柱を、業務を一番知る私たちが、AI駆動で。</p>
+    <div class="meta">
+      <div><b>主管</b>製品企画 × 開発</div>
+      <div><b>参加</b>開発／営業／CS／製品企画／ドメインエキスパート（経理）</div>
+      <div><b>狙い</b>方針共有 ／ 共通言語の獲得 ／ 直近アクション合意</div>
+    </div>
+    <div class="foot"><div class="brand">RAKUS <span>/ AI Expense</span></div><div class="pageno">01 / 21</div></div>
+  </section>
+
+  <!-- 2. Agenda -->
+  <section class="slide">
+    <div class="head"><span class="chip">Agenda</span><span class="crumb">本日のアジェンダ・約30分</span></div>
+    <h2 class="sec">本日お話しすること</h2>
+    <p class="lede">立場の異なるメンバーが集まる場なので、まず <b>AI前提の進め方の共通言語</b> を揃えたうえで、プロダクトの中身・進め方・スケジュールに進みます。</p>
+    <div class="toc-grid">
+      <div class="toc-item"><div><div class="n">SECTION 1 / 04分</div><h5>事業背景とゴール</h5><p>なぜ今AI経費精算か／プロジェクトのゴール</p></div></div>
+      <div class="toc-item"><div><div class="n">SECTION 2 / 05分</div><h5>戦略・ポジショニング</h5><p>大原則／ターゲット／既存製品との関係</p></div></div>
+      <div class="toc-item"><div><div class="n">SECTION 3 / 06分</div><h5>共通言語：AI駆動開発と役割分担</h5><p>AI駆動開発／AIエージェント vs ルールベース</p></div></div>
+      <div class="toc-item"><div><div class="n">SECTION 4 / 08分</div><h5>プロダクトの中身</h5><p>業務フロー／役割分担図／AIオンボーディング／「型」化</p></div></div>
+      <div class="toc-item"><div><div class="n">SECTION 5 / 05分</div><h5>進め方・体制</h5><p>AI駆動／業務でのAI活用／PMFアプローチ／体制</p></div></div>
+      <div class="toc-item"><div><div class="n">SECTION 6 / 02分</div><h5>スケジュール・アクション</h5><p>マスタースケジュール／30-60-90 days／クロージング</p></div></div>
+    </div>
+    <div class="foot"><div class="brand">RAKUS <span>/ AI Expense</span></div><div class="pageno">02 / 21</div></div>
+  </section>
+
+  <!-- 3. Why now -->
+  <section class="slide">
+    <div class="head"><span class="chip">Section 1 — Background</span><span class="crumb">なぜ今、AI経費精算か</span></div>
+    <h2 class="sec">業務SaaSは、AIで「再設計」される側にいる</h2>
+    <p class="lede">「既存SaaSにAIを組み込む」だけでは、AIネイティブな新興プレーヤーに置き換えられるリスクがある。経費精算は <b>定型業務 × ルール × 構造化データ</b> の塊で、AI親和性が極めて高い領域。</p>
+    <div class="grid grid-3">
+      <div class="card primary">
+        <div class="kicker">RISK</div>
+        <h4>AIによるディスラプト</h4>
+        <p>業務SaaSの価値の中核（フォーム入力／承認動線／集計）の多くは、AIエージェントが代替し得る。「AIを足す」では差別化にならない。</p>
+      </div>
+      <div class="card cyan">
+        <div class="kicker cyan">OPPORTUNITY</div>
+        <h4>経費精算はAIの主戦場</h4>
+        <p>規程の解釈、領収書のOCR/分類、重複チェック、仕訳判断…AIが効く工程の連続。<b>「自動化の深さ」で差がつく</b>領域。</p>
+      </div>
+      <div class="card amber">
+        <div class="kicker amber">OUR EDGE</div>
+        <h4>ラクスだからやる意味</h4>
+        <p>楽楽精算で培った <b>業務理解と顧客接点</b>。AIネイティブな再設計を、業務をわかっている我々が先にやる。</p>
+      </div>
+    </div>
+    <div class="quote" style="margin-top:18px">守りで「楽楽精算にAIを足す」のではなく、攻めで「AI前提の経費精算」を別ラインで立ち上げ、ラクスの未来事業を作る。</div>
+    <div class="foot"><div class="brand">RAKUS <span>/ AI Expense</span></div><div class="pageno">03 / 21</div></div>
+  </section>
+
+  <!-- 4. Goals -->
+  <section class="slide">
+    <div class="head"><span class="chip">Section 1 — Goal</span><span class="crumb">プロジェクトのゴール</span></div>
+    <h2 class="sec">当面のゴールは「社内一部自動化」と「売れる製品企画」</h2>
+    <p class="lede">PMFの確証が取れるまでは、機能網羅でも完成度でもなく、<b>「売れる条件」を発見すること</b>を全員のゴールとする。</p>
+    <div class="grid grid-2">
+      <div class="card lift">
+        <div class="kicker">SHORT TERM</div>
+        <h4>① ラクス社内の経費精算業務の一部自動化</h4>
+        <ul>
+          <li>従業員2,000名超のラクス自身が「最初の1社」</li>
+          <li>現役経理（管理職）がドメインエキスパートとして常時参画</li>
+          <li>PoC → 社内運用開始までを上期で</li>
+        </ul>
+      </div>
+      <div class="card lift">
+        <div class="kicker cyan">SHORT TERM</div>
+        <h4>② マネタイズ可能な製品企画の確立</h4>
+        <ul>
+          <li>楽楽精算既存顧客に仕様・デモをぶつけて反応を取る</li>
+          <li>「売れる機能セット」を仮説検証で発見</li>
+          <li>2027/4 に β版として顧客提供を開始（学習結果次第）</li>
+        </ul>
+      </div>
+    </div>
+    <div class="grid grid-3" style="margin-top:14px">
+      <div class="card"><div class="kicker amber">MID TERM</div><h4>標準化と再利用</h4><p>各社カスタマイズを <b>「型」</b> に蓄積し、案件単位での再利用効率を高める</p></div>
+      <div class="card"><div class="kicker pink">LONG TERM</div><h4>事業の柱化</h4><p>楽楽精算とは別ラインで <b>ラクスの未来事業</b> として育てる</p></div>
+      <div class="card"><div class="kicker green">CULTURE</div><h4>AI前提の働き方</h4><p>開発のみならず、営業/CS/企画 すべてを AI前提で進める組織能力の獲得</p></div>
+    </div>
+    <div class="foot"><div class="brand">RAKUS <span>/ AI Expense</span></div><div class="pageno">04 / 21</div></div>
+  </section>
+
+  <!-- 5. Principle -->
+  <section class="slide">
+    <div class="head"><span class="chip alt">Section 2 — Principle</span><span class="crumb">大原則</span></div>
+    <h2 class="sec">深い自動化 × 既存業務フローへの寄り添い</h2>
+    <p class="lede">対立しがちな2軸を <b>両立</b> させることが、AI経費精算のコア命題。どちらか片方に倒れた製品は、既に市場にある（あるいは作れる）。</p>
+    <div class="grid grid-2">
+      <div class="card primary">
+        <div class="kicker">AXIS A</div>
+        <h4>既存SaaS+AIを超える「自動化の深さ」</h4>
+        <p>申請・承認・仕訳・出力の <b>多くの判断と作業を、人間からAIへ寄せる</b>。「AIで便利になりました」ではなく、「やることが減った」を体感させる。</p>
+        <ul>
+          <li>領収書理解／規程適合判定／重複検知／勘定推定の自動化</li>
+          <li>申請者・承認者・経理それぞれの操作時間を桁で削る</li>
+        </ul>
+      </div>
+      <div class="card cyan">
+        <div class="kicker cyan">AXIS B</div>
+        <h4>既存業務フローを大きく変えない</h4>
+        <p>各社には <b>システム有無に関わらず既存の経費業務フローが必ず存在</b> する。これを破壊する設計は受け入れられない。<b>楽楽精算が広く受け入れられた要因を踏襲</b>する。</p>
+        <ul>
+          <li>承認フロー／勘定体系／規程体系は<b>顧客側のものに合わせる</b></li>
+          <li>AIは"判断の主体"ではなく"作業を引き取る存在"として配置</li>
+        </ul>
+      </div>
+    </div>
+    <div class="quote" style="margin-top:18px">"ワークフローの自動化" であって、"ワークフローの破壊" ではない。</div>
+    <div class="foot"><div class="brand">RAKUS <span>/ AI Expense</span></div><div class="pageno">05 / 21</div></div>
+  </section>
+
+  <!-- 6. Target -->
+  <section class="slide">
+    <div class="head"><span class="chip alt">Section 2 — Target</span><span class="crumb">ターゲット市場</span></div>
+    <h2 class="sec">最初のターゲットは「従業員1,000名以上のエンプラ」</h2>
+    <p class="lede">AIの便益が大きく出る顧客特性と、収益性・「型」化の効きやすさを両立する層から入る。</p>
+    <div class="grid grid-3">
+      <div class="card lift">
+        <div class="kicker">VOLUME</div>
+        <h4>件数が多い</h4>
+        <p>1日あたりの申請・承認件数が多く、自動化の <b>絶対的な工数削減効果</b> が大きい。</p>
+      </div>
+      <div class="card lift">
+        <div class="kicker cyan">COMPLEXITY</div>
+        <h4>規程・統制が複雑</h4>
+        <p>出張規程／交際費規程／部門別ルール／インボイス対応など、<b>"判断"を要する場面が多い</b> = AIが効く。</p>
+      </div>
+      <div class="card lift">
+        <div class="kicker amber">ECONOMICS</div>
+        <h4>単価が高い</h4>
+        <p>ソフトに加え <b>導入支援・連携・カスタマイズ</b> に費用を出せる。「型」を蓄積しながら回せる。</p>
+      </div>
+    </div>
+    <div class="grid grid-3" style="margin-top:14px">
+      <div class="card pink"><div class="kicker pink">INTEGRATION</div><h4>基幹システム連携前提</h4><p>会計／人事／ワークフロー／銀行 — <b>連携は不可避</b>。コネクタと"型"の設計が肝。</p></div>
+      <div class="card pink"><div class="kicker pink">GOVERNANCE</div><h4>監査・統制要件が強い</h4><p>説明可能性／監査ログ／二重精算検知。<b>ルールベースとAIの併用</b>が必須。</p></div>
+      <div class="card pink"><div class="kicker pink">ACCESS</div><h4>ラクスの既存接点と相性</h4><p>楽楽精算の既存大口顧客にデモ・FBを取りに行ける優位性。</p></div>
+    </div>
+    <div class="foot"><div class="brand">RAKUS <span>/ AI Expense</span></div><div class="pageno">06 / 21</div></div>
+  </section>
+
+  <!-- 7. Relation to Rakuraku -->
+  <section class="slide">
+    <div class="head"><span class="chip alt">Section 2 — Positioning</span><span class="crumb">既存製品との関係</span></div>
+    <h2 class="sec">楽楽精算と「競合」せず、「踏襲＋上を取る」</h2>
+    <p class="lede">AI経費精算は楽楽精算の機能拡張版ではない。一方で楽楽精算の <b>業務フローへの寄り添い思想</b> は徹底的に踏襲する。</p>
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="kicker">INHERIT</div>
+        <h4>踏襲する楽楽精算の成功要因</h4>
+        <ul>
+          <li>顧客の業務フローを変えに行かない柔軟さ</li>
+          <li>規程・勘定・承認体系を顧客側に合わせる思想</li>
+          <li>導入支援と運用伴走の手厚さ</li>
+        </ul>
+      </div>
+      <div class="card primary">
+        <div class="kicker">REDEFINE</div>
+        <h4>AI経費精算が取りに行く新しい価値</h4>
+        <ul>
+          <li>「入力／承認／仕訳」の<b>作業そのものをAIが引き取る</b></li>
+          <li>規程・過去事例を学んだ <b>会社ごとに賢くなる</b>製品</li>
+          <li>導入＝SaaS導入ではなく <b>"AIオンボーディング"</b></li>
+        </ul>
+      </div>
+    </div>
+    <div class="quote" style="margin-top:18px">ロールモデルとなる製品はまだ存在しない。<b>我々が見つけ、定義する</b>側のプロジェクト。</div>
+    <div class="foot"><div class="brand">RAKUS <span>/ AI Expense</span></div><div class="pageno">07 / 21</div></div>
+  </section>
+
+  <!-- 8. AI Driven Dev -->
+  <section class="slide">
+    <div class="head"><span class="chip warm">Section 3 — Concept ①</span><span class="crumb">AI駆動開発とは</span></div>
+    <h2 class="sec">AI駆動開発 ＝「AIに作らせ、人が設計・レビュー・判断する」</h2>
+    <p class="lede">全員の共通理解として。AI駆動開発は単に「Copilot を使う」ことではなく、<b>開発プロセス全体をAI前提で再設計する</b> 取り組み。</p>
+    <div class="grid grid-3">
+      <div class="card lift">
+        <div class="kicker">SHIFT</div>
+        <h4>役割の変化</h4>
+        <ul>
+          <li>コードを書く人 → <b>AIに指示する設計者・レビュアー</b></li>
+          <li>仕様書を書く人 → AIが読める <b>構造化された仕様</b> を書く人</li>
+        </ul>
+      </div>
+      <div class="card lift">
+        <div class="kicker cyan">SPEED</div>
+        <h4>反復速度の桁違いの向上</h4>
+        <ul>
+          <li>仕様→プロト→FB→修正 を <b>日〜時間単位</b> で回す</li>
+          <li>「作ってから考える」を恐れない</li>
+        </ul>
+      </div>
+      <div class="card lift">
+        <div class="kicker amber">PREREQ</div>
+        <h4>前提となる資産</h4>
+        <ul>
+          <li>仕様・規程・FBが <b>構造化テキスト</b> で蓄積されていること</li>
+          <li>テスト・型・ガードレールが効いていること</li>
+        </ul>
+      </div>
+    </div>
+    <div class="quote" style="margin-top:18px">スケジュールは「人月」ではなく「<b>AI込みの反復回数</b>」で組む。生産性が桁で変わる前提で計画する。</div>
+    <div class="foot"><div class="brand">RAKUS <span>/ AI Expense</span></div><div class="pageno">08 / 21</div></div>
+  </section>
+
+  <!-- 9. Agent vs Rule -->
+  <section class="slide">
+    <div class="head"><span class="chip warm">Section 3 — Concept ②</span><span class="crumb">AIエージェント vs ルールベース</span></div>
+    <h2 class="sec">AIエージェントとルールベースは、対立ではなく <b>分担</b></h2>
+    <p class="lede">経費精算は「確定的に処理すべきこと」と「文脈で判断すべきこと」が混在。<b>使い分けの設計力</b> が製品品質を決める。</p>
+    <div class="grid grid-2">
+      <div class="card primary">
+        <div class="kicker">AI / LLM AGENT</div>
+        <h4>得意なこと</h4>
+        <ul>
+          <li>自然言語の理解（規程文書／申請理由／メール）</li>
+          <li>領収書・PDFの読み取りと意味付け</li>
+          <li>曖昧さ・例外を <b>判断補助</b> する</li>
+          <li>過去事例からの類推</li>
+        </ul>
+        <p class="mini">→ 説明・確認・補助・推定</p>
+      </div>
+      <div class="card cyan">
+        <div class="kicker cyan">RULE-BASED</div>
+        <h4>得意なこと</h4>
+        <ul>
+          <li>金額・税率計算、為替換算、四捨五入</li>
+          <li>マスタ参照、重複検知、上限チェック</li>
+          <li>会計／銀行システムへの確定的な出力</li>
+          <li>監査ログ・統制が効く処理</li>
+        </ul>
+        <p class="mini">→ 確定・監査・実行</p>
+      </div>
+    </div>
+    <div class="quote" style="margin-top:18px">原則：<b>「お金が動くところ」「監査されるところ」はルールベース</b>。<b>「人が考えていたところ」はAIエージェント</b>。間を Human-in-the-loop でつなぐ。</div>
+    <div class="foot"><div class="brand">RAKUS <span>/ AI Expense</span></div><div class="pageno">09 / 21</div></div>
+  </section>
+
+  <!-- 10. Flow overview -->
+  <section class="slide">
+    <div class="head"><span class="chip">Section 4 — Product</span><span class="crumb">業務フロー全体像</span></div>
+    <h2 class="sec">対象とする経費精算の業務フロー</h2>
+    <p class="lede">本プロジェクトのスコープは、申請から会計・銀行出力までの一連の流れ。各工程に <b>"AIが引き取れる作業"</b> が存在する。</p>
+    <div class="flow">
+      <div class="step"><div class="label">① 経費申請</div><div class="desc">領収書アップロード／費目入力／申請理由／規程の自己チェック</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="label">② 精算伝票起票</div><div class="desc">明細化／勘定推定／税区分／プロジェクトコード割当</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="label">③ 承認</div><div class="desc">規程適合／妥当性／二重精算／予算チェック</div></div>
+    </div>
+    <div class="flow" style="margin-top:10px">
+      <div class="step"><div class="label">④ 仕訳</div><div class="desc">勘定・補助・部門・税区分の確定／月次締めへの組込み</div></div>
+      <div class="arrow">→</div>
+      <div class="step"><div class="label">⑤ 出力</div><div class="desc">会計システム連携／FBデータ／振込／監査証跡保管</div></div>
+      <div class="arrow"></div>
+      <div class="step" style="background:#fdf2f8;border-color:#fbcfe8"><div class="label">⑥ 学習ループ</div><div class="desc">差し戻し・修正履歴をAIに還流し、会社ごとに賢くする</div></div>
+    </div>
+    <div class="grid grid-3" style="margin-top:16px">
+      <div class="card"><div class="kicker">PAIN: 申請者</div><p>規程がわからない／何を書けば通るか不明／領収書整理が面倒</p></div>
+      <div class="card"><div class="kicker cyan">PAIN: 承認者</div><p>規程の細部を把握しきれない／形骸化／差し戻しの判断にばらつき</p></div>
+      <div class="card"><div class="kicker amber">PAIN: 経理</div><p>勘定推定／差し戻しコスト／月末の集中／監査対応</p></div>
+    </div>
+    <div class="foot"><div class="brand">RAKUS <span>/ AI Expense</span></div><div class="pageno">10 / 21</div></div>
+  </section>
+
+  <!-- 11. Role mapping diagram -->
+  <section class="slide">
+    <div class="head"><span class="chip">Section 4 — Architecture</span><span class="crumb">役割分担図</span></div>
+    <h2 class="sec">AIエージェント / ルールベース / 人 の役割分担</h2>
+    <p class="lede">各工程に <b>誰が何を担当するか</b> を明示する。これがそのままアーキテクチャと開発スコープの骨格になる。</p>
+    <svg viewBox="0 0 1180 360" width="100%" height="360" xmlns="http://www.w3.org/2000/svg" style="margin-top:-4px">
+      <defs>
+        <marker id="arr" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+          <path d="M0,0 L8,5 L0,10 Z" fill="#94a3b8"/>
+        </marker>
+        <linearGradient id="aiBg" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#f5f3ff"/><stop offset="100%" stop-color="#ffffff"/>
+        </linearGradient>
+        <linearGradient id="ruleBg" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#ecfeff"/><stop offset="100%" stop-color="#ffffff"/>
+        </linearGradient>
+        <linearGradient id="humanBg" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="#fff7ed"/><stop offset="100%" stop-color="#ffffff"/>
+        </linearGradient>
+      </defs>
+
+      <!-- Lane labels -->
+      <g font-family="Inter,sans-serif" font-size="11" font-weight="700">
+        <rect x="10" y="20" width="120" height="26" rx="6" fill="#7c3aed"/>
+        <text x="70" y="38" text-anchor="middle" fill="#fff">AI AGENT</text>
+        <rect x="10" y="150" width="120" height="26" rx="6" fill="#0ea5e9"/>
+        <text x="70" y="168" text-anchor="middle" fill="#fff">RULE-BASED</text>
+        <rect x="10" y="280" width="120" height="26" rx="6" fill="#f97316"/>
+        <text x="70" y="298" text-anchor="middle" fill="#fff">HUMAN-IN-THE-LOOP</text>
+      </g>
+
+      <!-- AI lane -->
+      <g font-family="Inter,sans-serif" font-size="11" fill="#312e81">
+        <rect x="150" y="10" width="180" height="60" rx="10" fill="url(#aiBg)" stroke="#c4b5fd"/>
+        <text x="160" y="30" font-weight="700">領収書理解 Agent</text>
+        <text x="160" y="48">店名／日付／金額／インボイス番号</text>
+        <text x="160" y="62">→ 構造化＋分類</text>
+
+        <rect x="350" y="10" width="180" height="60" rx="10" fill="url(#aiBg)" stroke="#c4b5fd"/>
+        <text x="360" y="30" font-weight="700">勘定推定 Agent</text>
+        <text x="360" y="48">過去仕訳／規程／文脈から</text>
+        <text x="360" y="62">勘定・税区分の候補提示</text>
+
+        <rect x="550" y="10" width="180" height="60" rx="10" fill="url(#aiBg)" stroke="#c4b5fd"/>
+        <text x="560" y="30" font-weight="700">規程適合 Agent</text>
+        <text x="560" y="48">出張・交際費・接待規程の</text>
+        <text x="560" y="62">解釈と差し戻し理由の生成</text>
+
+        <rect x="750" y="10" width="180" height="60" rx="10" fill="url(#aiBg)" stroke="#c4b5fd"/>
+        <text x="760" y="30" font-weight="700">妥当性Agent</text>
+        <text x="760" y="48">金額の相場感・申請理由の</text>
+        <text x="760" y="62">整合性チェック・要確認指摘</text>
+
+        <rect x="950" y="10" width="180" height="60" rx="10" fill="url(#aiBg)" stroke="#c4b5fd"/>
+        <text x="960" y="30" font-weight="700">学習Agent</text>
+        <text x="960" y="48">差し戻し・訂正履歴を取り込み</text>
+        <text x="960" y="62">社内モデルを継続更新</text>
+      </g>
+
+      <!-- Rule lane -->
+      <g font-family="Inter,sans-serif" font-size="11" fill="#075985">
+        <rect x="150" y="140" width="180" height="60" rx="10" fill="url(#ruleBg)" stroke="#7dd3fc"/>
+        <text x="160" y="160" font-weight="700">マスタ照合</text>
+        <text x="160" y="178">社員／部門／プロジェクト</text>
+        <text x="160" y="192">／取引先マスタ</text>
+
+        <rect x="350" y="140" width="180" height="60" rx="10" fill="url(#ruleBg)" stroke="#7dd3fc"/>
+        <text x="360" y="160" font-weight="700">税・金額計算</text>
+        <text x="360" y="178">税区分／消費税／為替</text>
+        <text x="360" y="192">／インボイス要件</text>
+
+        <rect x="550" y="140" width="180" height="60" rx="10" fill="url(#ruleBg)" stroke="#7dd3fc"/>
+        <text x="560" y="160" font-weight="700">二重精算・上限チェック</text>
+        <text x="560" y="178">過去申請との突合／</text>
+        <text x="560" y="192">規程上限・予算上限</text>
+
+        <rect x="750" y="140" width="180" height="60" rx="10" fill="url(#ruleBg)" stroke="#7dd3fc"/>
+        <text x="760" y="160" font-weight="700">承認ルーティング</text>
+        <text x="760" y="178">部門・金額に応じた</text>
+        <text x="760" y="192">既存承認フロー</text>
+
+        <rect x="950" y="140" width="180" height="60" rx="10" fill="url(#ruleBg)" stroke="#7dd3fc"/>
+        <text x="960" y="160" font-weight="700">会計／銀行出力</text>
+        <text x="960" y="178">仕訳・FBデータ生成</text>
+        <text x="960" y="192">／監査ログ保管</text>
+      </g>
+
+      <!-- Human lane -->
+      <g font-family="Inter,sans-serif" font-size="11" fill="#7c2d12">
+        <rect x="150" y="270" width="180" height="60" rx="10" fill="url(#humanBg)" stroke="#fdba74"/>
+        <text x="160" y="290" font-weight="700">申請者</text>
+        <text x="160" y="308">AIの起票結果を最終確認</text>
+        <text x="160" y="322">（不足情報のみ補完）</text>
+
+        <rect x="550" y="270" width="180" height="60" rx="10" fill="url(#humanBg)" stroke="#fdba74"/>
+        <text x="560" y="290" font-weight="700">承認者</text>
+        <text x="560" y="308">AIが整理した論点だけを</text>
+        <text x="560" y="322">レビューして承認</text>
+
+        <rect x="950" y="270" width="180" height="60" rx="10" fill="url(#humanBg)" stroke="#fdba74"/>
+        <text x="960" y="290" font-weight="700">経理</text>
+        <text x="960" y="308">例外処理／監査対応</text>
+        <text x="960" y="322">／ルール改善</text>
+      </g>
+
+      <!-- Flow arrows -->
+      <g stroke="#cbd5e1" stroke-width="1.5" fill="none" marker-end="url(#arr)">
+        <path d="M240 70 L240 140"/>
+        <path d="M440 70 L440 140"/>
+        <path d="M640 70 L640 140"/>
+        <path d="M840 70 L840 140"/>
+        <path d="M1040 70 L1040 140"/>
+        <path d="M240 200 L240 270"/>
+        <path d="M640 200 L640 270"/>
+        <path d="M1040 200 L1040 270"/>
+      </g>
+    </svg>
+    <div class="legend"><span><span class="sw ai"></span>AI Agent（判断・抽出・推定）</span><span><span class="sw rule"></span>Rule-based（確定・監査・実行）</span><span><span class="sw human"></span>Human-in-the-loop（最終確認・例外）</span></div>
+    <div class="foot"><div class="brand">RAKUS <span>/ AI Expense</span></div><div class="pageno">11 / 21</div></div>
+  </section>
+
+  <!-- 12. AI Onboarding -->
+  <section class="slide">
+    <div class="head"><span class="chip">Section 4 — Onboarding</span><span class="crumb">AIオンボーディング</span></div>
+    <h2 class="sec">社内規定をAIに「学習させる」とは、具体的に何をするか</h2>
+    <p class="lede">"AIに規程を読ませる"は <b>RAG・プロンプト・ガードレール・人間FB</b> の組合せ。プロジェクトでは <b>導入手順そのもの</b>をプロダクト化する。</p>
+    <table class="simple">
+      <thead><tr><th style="width:18%">手段</th><th style="width:32%">具体内容</th><th style="width:25%">何に向くか</th><th>例：出張規程をAIに教える</th></tr></thead>
+      <tbody>
+        <tr><td><b>システム指示<br/>(Prompt)</b></td><td>役割・禁止事項・出力フォーマットの宣言</td><td>振る舞いの土台</td><td>「あなたはラクスの経理アシスタント。判断根拠を必ず示すこと」</td></tr>
+        <tr><td><b>RAG<br/>(検索拡張)</b></td><td>規程・FAQ・過去事例・勘定マスタを検索して都度参照</td><td>会社固有・更新が多い知識</td><td>出張規程PDFを章単位でインデックス／問い合わせ時に該当条文を引いて回答</td></tr>
+        <tr><td><b>ツール利用</b></td><td>マスタ照合・税計算・上限チェックは外部Toolとして呼び出す</td><td>確定処理・監査要件</td><td>「日当上限」はAIが推測せず、上限マスタAPIを叩いて取得</td></tr>
+        <tr><td><b>ガードレール</b></td><td>ルールベースで前後の値域・整合性を強制</td><td>誤りが許されない処理</td><td>申請金額の <b>上限超過は確定的に弾く</b>。AIには「弾かれた理由」を説明させる</td></tr>
+        <tr><td><b>人間FB / 改善</b></td><td>差し戻し・訂正履歴をデータ化し再学習・プロンプト更新</td><td>会社ごとの最適化</td><td>承認者の「これはNG」を蓄積し、月次でモデル/プロンプトに反映</td></tr>
+      </tbody>
+    </table>
+    <div class="foot"><div class="brand">RAKUS <span>/ AI Expense</span></div><div class="pageno">12 / 21</div></div>
+  </section>
+
+  <!-- 13. Domain knowledge prep -->
+  <section class="slide">
+    <div class="head"><span class="chip">Section 4 — Knowledge</span><span class="crumb">事前ドメイン知識整備</span></div>
+    <h2 class="sec">PMF探索と並行して、AIへ与える "資産" を整える</h2>
+    <p class="lede">AI駆動開発・AIエージェントの精度は、与える <b>ドメイン知識の質と構造</b> で決まる。<br/>楽楽精算のドキュメント群とラクス経理の暗黙知を、AIが使える形に変換しておく。</p>
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="kicker">SOURCE</div>
+        <h4>インプットになる資産</h4>
+        <ul>
+          <li>楽楽精算の製品ドキュメント・規程テンプレ・勘定科目体系</li>
+          <li>税法／インボイス制度／電子帳簿保存法の解説</li>
+          <li>ラクス社内の経費規程・運用ルール</li>
+          <li>過去申請データ・差し戻し履歴（社内）</li>
+          <li>ドメインエキスパート（経理管理職）の暗黙知</li>
+        </ul>
+      </div>
+      <div class="card primary">
+        <div class="kicker">OUTPUT</div>
+        <h4>整備する成果物</h4>
+        <ul>
+          <li><b>用語集</b>（社内用語 ⇔ 会計標準語の対応）</li>
+          <li><b>業務オントロジー</b>（費目・規程・承認・仕訳の関係）</li>
+          <li><b>ルール集</b>（判定可能な規程を構造化）</li>
+          <li><b>サンプルQA / 事例集</b>（RAGの教師）</li>
+          <li><b>NG例集</b>（差し戻し理由のパターン）</li>
+        </ul>
+      </div>
+    </div>
+    <div class="quote" style="margin-top:18px">この整備は <b>PoCのおまけではなくPoCの本体</b>。AI製品の競争力はこの "知識資産" にこそ宿る。</div>
+    <div class="foot"><div class="brand">RAKUS <span>/ AI Expense</span></div><div class="pageno">13 / 21</div></div>
+  </section>
+
+  <!-- 14. Foundry / Type -->
+  <section class="slide">
+    <div class="head"><span class="chip">Section 4 — Delivery Model</span><span class="crumb">パランティア型「型」</span></div>
+    <h2 class="sec">短期SI と スケール の両立 — 「型」で蓄積する</h2>
+    <p class="lede">完全プロダクト化は無理（各社で規程・基幹・勘定が違う）。一からSIも無理（スケールしない）。<br/>解は <b>"型"＝再利用可能な部品セット</b> を案件ごとに増やしていくモデル（パランティアの Foundry 的アプローチ）。</p>
+    <div class="grid grid-4">
+      <div class="card primary"><div class="kicker">TYPE ①</div><h4>業界・会社規程テンプレ</h4><p>出張・交際費・在宅などの規程パターン</p></div>
+      <div class="card cyan"><div class="kicker cyan">TYPE ②</div><h4>勘定・税区分オントロジー</h4><p>業種別の費目・勘定マッピング</p></div>
+      <div class="card amber"><div class="kicker amber">TYPE ③</div><h4>連携コネクタ</h4><p>会計・人事・ワークフロー・銀行の接続</p></div>
+      <div class="card pink"><div class="kicker pink">TYPE ④</div><h4>AIエージェント定義</h4><p>領収書／規程／勘定／妥当性 等の組合せ</p></div>
+    </div>
+    <div class="grid grid-2" style="margin-top:16px">
+      <div class="card lift"><div class="kicker">FLOW</div><h4>案件運用</h4><p>① 既存「型」から最大限再利用 → ② 不足分をその案件用に作る → ③ 汎用化できるものを「型」に昇格 → 次案件へ。</p></div>
+      <div class="card lift"><div class="kicker green">SUPPORT</div><h4>コンサル的支援を前提に</h4><p>規程整備・運用設計・AIオンボーディングは <b>サービスとしてセット</b> で提供。受託ではなく <b>"型"を増やす投資</b>として位置づける。</p></div>
+    </div>
+    <div class="foot"><div class="brand">RAKUS <span>/ AI Expense</span></div><div class="pageno">14 / 21</div></div>
+  </section>
+
+  <!-- 15. Project Approach -->
+  <section class="slide">
+    <div class="head"><span class="chip warm">Section 5 — Approach</span><span class="crumb">プロジェクトの進め方</span></div>
+    <h2 class="sec">本プロジェクトは "AI駆動開発" を徹底する</h2>
+    <p class="lede">PMFまでは <b>ビジネス／開発の垣根なし</b>。「売れる製品」を作ることが全員の仕事。</p>
+    <div class="grid grid-3">
+      <div class="card primary"><div class="kicker">①</div><h4>仮説 → モック → FB → 反復</h4><p>仮コンセプト・モック・プロトを最速で作り、楽楽精算既存顧客／社内ユーザーにぶつけ続ける</p></div>
+      <div class="card cyan"><div class="kicker cyan">②</div><h4>AIで作って AIで検証</h4><p>開発・テスト・仕様レビュー・QA をAI前提で。人間は<b>意思決定とレビュー</b>に集中</p></div>
+      <div class="card amber"><div class="kicker amber">③</div><h4>ドキュメント = 一級の成果物</h4><p>規程・仕様・FBは <b>構造化テキスト</b> で蓄積。AI（と将来の人）の入力になる</p></div>
+    </div>
+    <div class="grid grid-2" style="margin-top:16px">
+      <div class="card lift"><div class="kicker pink">④</div><h4>"作る前に作る"を恐れない</h4><p>確度の高い仕様より <b>素早い検証</b> を優先。捨てる前提のプロトを推奨</p></div>
+      <div class="card lift"><div class="kicker green">⑤</div><h4>ドメイン整備と開発は並行</h4><p>用語集・オントロジー・規程ルール化は <b>PoCと並走</b>。後工程に回さない</p></div>
+    </div>
+    <div class="foot"><div class="brand">RAKUS <span>/ AI Expense</span></div><div class="pageno">15 / 21</div></div>
+  </section>
+
+  <!-- 16. AI in non-dev work -->
+  <section class="slide">
+    <div class="head"><span class="chip warm">Section 5 — AI Everywhere</span><span class="crumb">開発以外の業務でのAI活用</span></div>
+    <h2 class="sec">開発だけがAI駆動ではない</h2>
+    <p class="lede">本プロジェクトでは <b>営業・CS・製品企画・ドメイン整備</b> もAI前提で進める。AI経費精算を作りながら、<b>AI前提のチーム運営そのものを学ぶ</b>。</p>
+    <div class="grid grid-2">
+      <div class="card primary">
+        <div class="kicker">SALES</div>
+        <h4>営業</h4>
+        <ul>
+          <li>顧客別ピッチ・提案書のAI生成</li>
+          <li>ヒアリングメモを構造化FBに自動変換</li>
+          <li>競合（楽楽精算含む）の自社評価をAIで整理</li>
+        </ul>
+      </div>
+      <div class="card cyan">
+        <div class="kicker cyan">CS</div>
+        <h4>カスタマーサクセス</h4>
+        <ul>
+          <li>顧客規程の事前読み込み・AIアセスメント</li>
+          <li>導入オンボーディングを<b>AIナビゲート化</b></li>
+          <li>FAQ/問い合わせをAI一次応答に</li>
+        </ul>
+      </div>
+      <div class="card amber">
+        <div class="kicker amber">PRODUCT</div>
+        <h4>製品企画</h4>
+        <ul>
+          <li>FBをテーマ別に自動分類／要望ヒートマップ化</li>
+          <li>機能仮説・PRDをAIドラフト → 人がレビュー</li>
+          <li>競合・周辺ツールの動向ウォッチをAIに任せる</li>
+        </ul>
+      </div>
+      <div class="card pink">
+        <div class="kicker pink">DOMAIN</div>
+        <h4>ドメインエキスパート</h4>
+        <ul>
+          <li>暗黙知を <b>AIとの対話</b> で構造化</li>
+          <li>規程・事例をオントロジー化／NG例の判定</li>
+          <li>AIが出した判定の "正解レビュアー" として中核に</li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot"><div class="brand">RAKUS <span>/ AI Expense</span></div><div class="pageno">16 / 21</div></div>
+  </section>
+
+  <!-- 17. PMF Approach -->
+  <section class="slide">
+    <div class="head"><span class="chip warm">Section 5 — PMF</span><span class="crumb">PMFアプローチ</span></div>
+    <h2 class="sec">"最大公約数" を狙わない</h2>
+    <p class="lede">ニーズの平均値を取った製品は売れない。<b>特定の1社で本当に役に立つ</b> ものを作り、同じニーズの企業群に広げる。</p>
+    <div class="grid grid-3">
+      <div class="card primary">
+        <div class="kicker">STEP 1</div>
+        <h4>最初の1社 = ラクス自身</h4>
+        <p>従業員2,000名超／既存規程あり／ドメインエキスパート常駐。<b>本気で使ってもらえる環境</b> がある。</p>
+      </div>
+      <div class="card cyan">
+        <div class="kicker cyan">STEP 2</div>
+        <h4>既存顧客にデモを当てる</h4>
+        <p>楽楽精算の既存顧客（特にエンプラ）に仕様・モックをぶつけ、<b>「うちでも欲しい」</b> の声と条件を集める。</p>
+      </div>
+      <div class="card amber">
+        <div class="kicker amber">STEP 3</div>
+        <h4>同じニーズ群へ展開</h4>
+        <p>1社で深く効くものを起点に、<b>同じ業務形態・規程・基幹環境</b> の企業群へ。</p>
+      </div>
+    </div>
+    <div class="quote" style="margin-top:18px">特定1社で本当に役立つ製品は、似たニーズの企業に <b>必ず売れる</b>。逆に万人受けを狙った製品は、誰にも刺さらない。</div>
+    <div class="foot"><div class="brand">RAKUS <span>/ AI Expense</span></div><div class="pageno">17 / 21</div></div>
+  </section>
+
+  <!-- 18. Team -->
+  <section class="slide">
+    <div class="head"><span class="chip warm">Section 5 — Team</span><span class="crumb">体制と期待役割</span></div>
+    <h2 class="sec">役割は固定しない、しかし役割期待は明確に</h2>
+    <p class="lede">PMFまでは <b>"職種より目的"</b>。職種別の期待役割はあるが、<b>「売れる製品を作る」</b> という目的に向けては全員がオーナー。</p>
+    <table class="simple">
+      <thead><tr><th style="width:18%">ロール</th><th style="width:30%">期待する主な役割</th><th>本プロジェクトで重要な観点</th></tr></thead>
+      <tbody>
+        <tr><td><b>開発</b></td><td>AIエージェント・ルールベース・連携基盤の実装／AI駆動開発の実践</td><td>「何を作るか」決まる前から手を動かす。プロトを最速で出す側。</td></tr>
+        <tr><td><b>営業</b></td><td>既存顧客アクセス／デモぶつけ／売れる条件・購買意思決定の言語化</td><td>顧客の声を <b>構造化されたFB</b> としてチームへ還流。</td></tr>
+        <tr><td><b>CS</b></td><td>導入・運用設計／規程アセスメント／オンボーディングの型化</td><td>「導入できるか」を最初から織り込む。SI型運用の設計者。</td></tr>
+        <tr><td><b>製品企画</b></td><td>仮説定義・優先順位／PMF条件の見極め／PRDオーナー</td><td>"作らない判断" を含むスコープ管理。学習駆動でロードマップを更新。</td></tr>
+        <tr><td><b>ドメインエキスパート<br/>（ラクス経理）</b></td><td>業務正解の最終判定／規程・実務の翻訳／AI出力のレビュー</td><td><b>「現役経理」</b> として参画。社内運用の推進主体でもある。</td></tr>
+      </tbody>
+    </table>
+    <div class="foot"><div class="brand">RAKUS <span>/ AI Expense</span></div><div class="pageno">18 / 21</div></div>
+  </section>
+
+  <!-- 19. Master Schedule -->
+  <section class="slide">
+    <div class="head"><span class="chip">Section 6 — Schedule</span><span class="crumb">マスタースケジュール</span></div>
+    <h2 class="sec">上期PoC → 社内運用 → 2027/4 β提供開始（学習駆動で更新）</h2>
+    <p class="lede">日付は仮置き。<b>マイルストーン駆動ではなく学習駆動</b>で動かす。PoCの結果次第で順序・内容を柔軟に組み替える。</p>
+    <div class="sched">
+      <div class="axis">
+        <div class="pin" style="left:6%;border-color:var(--primary)"></div>
+        <div class="pin cyan" style="left:35%"></div>
+        <div class="pin amber" style="left:65%"></div>
+        <div class="pin pink" style="left:94%"></div>
+      </div>
+      <div class="labels">
+        <div class="blk"><h6>2026 Q2-Q3</h6><h5>PoC・ドメイン整備</h5><p>仮コンセプト3本／モック作成／楽楽精算ドキュメント整理／規程オントロジー初版</p></div>
+        <div class="blk"><h6>2026 H1末</h6><h5>社内一部運用 / MVP仕様策定</h5><p>ラクス社内の特定範囲で運用開始／MVP機能セットを既存顧客FBで仮説検証</p></div>
+        <div class="blk"><h6>2026 H2</h6><h5>MVP開発・社内拡張</h5><p>機能拡張／連携コネクタ整備／既存顧客への限定デモ・PoC案件着手</p></div>
+        <div class="blk"><h6>2027 / 04</h6><h5>β版 顧客提供開始</h5><p>「型」を活用した短期導入で複数社β／フィードバックでGAへ収斂</p></div>
+      </div>
+    </div>
+    <div class="quote" style="margin-top:18px">前提：PoC結果で <b>製品コンセプト自体が変わり得る</b>。スケジュールは更新前提で運用する。</div>
+    <div class="foot"><div class="brand">RAKUS <span>/ AI Expense</span></div><div class="pageno">19 / 21</div></div>
+  </section>
+
+  <!-- 20. Next Actions -->
+  <section class="slide">
+    <div class="head"><span class="chip">Section 6 — Next</span><span class="crumb">直近のアクション</span></div>
+    <h2 class="sec">30 / 60 / 90 days で何をやるか</h2>
+    <p class="lede">立ち上がりの90日を <b>知識資産・仮説・PoC範囲</b> の3点で前進させる。各ロールでオーナーを決め、週次で更新する。</p>
+    <div class="grid grid-3">
+      <div class="card primary">
+        <div class="kicker">FIRST 30 DAYS</div>
+        <h4>方向性を「決める」</h4>
+        <ul>
+          <li>仮コンセプト 3本ドラフト（製品企画＋開発）</li>
+          <li>ドメイン知識リポジトリ立ち上げ（用語／規程／オントロジー）</li>
+          <li>PoCスコープ案を社内経理と合意</li>
+          <li>営業：FB対象になり得るエンプラ顧客のロングリスト</li>
+        </ul>
+      </div>
+      <div class="card cyan">
+        <div class="kicker cyan">FIRST 60 DAYS</div>
+        <h4>触れるものを「出す」</h4>
+        <ul>
+          <li>モック 1stドラフト（最も自動化効果が出る工程）</li>
+          <li>AIエージェント構成図／ルール分担を確定</li>
+          <li>社内対象業務スコープを正式決定</li>
+          <li>営業：3社のヒアリング日程確保</li>
+        </ul>
+      </div>
+      <div class="card amber">
+        <div class="kicker amber">FIRST 90 DAYS</div>
+        <h4>反応を「測る」</h4>
+        <ul>
+          <li>PoC着手（社内ラクス経理／限定範囲）</li>
+          <li>楽楽精算既存顧客3社へのデモ／構造化FB取得</li>
+          <li>「型」第1版を定義（規程・コネクタ・エージェント）</li>
+          <li>マスタースケジュールの一次更新</li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot"><div class="brand">RAKUS <span>/ AI Expense</span></div><div class="pageno">20 / 21</div></div>
+  </section>
+
+  <!-- 21. Closing -->
+  <section class="slide closing">
+    <div class="head"><span class="chip warm">Closing</span><span class="crumb" style="color:#94a3b8">ラクスの未来を作る事業として</span></div>
+    <h2>AIによるディスラプトは<br/><span class="gradient">"来る" のではなく "既に起きている"</span></h2>
+    <p style="margin-top:18px">だからこそ、業務を一番よく知る我々ラクスが、AI経費精算を作る意味がある。<br/>これは楽楽精算の延長戦ではなく、<b style="color:#fff">ラクスの未来事業</b>を立ち上げる挑戦。<br/>開発・営業・CS・製品企画・ドメインエキスパート — <b style="color:#fff">職種の壁を越えて</b>、AI前提の働き方を実装しながら、AI前提のプロダクトを作りに行きましょう。</p>
+    <div class="who">
+      <span>開発</span><span>営業</span><span>CS</span><span>製品企画</span><span>ドメインエキスパート</span>
+    </div>
+    <p style="margin-top:36px;color:#94a3b8;font-size:14px">よろしくお願いします。質問・違和感・提案は、その場で、何度でも。</p>
+    <div class="foot"><div class="brand">RAKUS <span style="color:#a5b4fc">/ AI Expense</span></div><div class="pageno">21 / 21</div></div>
+  </section>
+
+  </div>
+</div>
+
+<div class="controls">
+  <button id="prev">← Prev</button>
+  <span class="pos"><span id="cur">1</span> / <span id="tot">21</span></span>
+  <button id="next">Next →</button>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let idx = 0;
+  document.getElementById('tot').textContent = total;
+  function show(i){
+    idx = (i + total) % total;
+    slides.forEach((s,k)=>s.classList.toggle('active', k===idx));
+    document.getElementById('cur').textContent = idx+1;
+  }
+  document.getElementById('prev').addEventListener('click',()=>show(idx-1));
+  document.getElementById('next').addEventListener('click',()=>show(idx+1));
+  document.addEventListener('keydown',(e)=>{
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown') show(idx+1);
+    if(e.key==='ArrowLeft'||e.key==='PageUp') show(idx-1);
+    if(e.key==='Home') show(0);
+    if(e.key==='End') show(total-1);
+  });
+</script>
+</body>
+</html>
