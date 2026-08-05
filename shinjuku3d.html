@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>新宿3D探索 — Project PLATEAU</title>
+<title>東京3D探索（新宿・六本木） — Project PLATEAU</title>
 <script>window.CESIUM_BASE_URL = "https://cdn.jsdelivr.net/npm/cesium@1.130/Build/Cesium/";</script>
 <script src="https://cdn.jsdelivr.net/npm/cesium@1.130/Build/Cesium/Cesium.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cesium@1.130/Build/Cesium/Widgets/widgets.css">
@@ -67,7 +67,12 @@
 <div id="crosshair"></div>
 
 <div id="hud" class="panel">
-  <h1>新宿 3D探索<small>Project PLATEAU 3D都市モデル（国土交通省）</small></h1>
+  <h1>東京 3D探索<small>Project PLATEAU 3D都市モデル（国土交通省）</small></h1>
+
+  <div class="sec">
+    <div class="cap">エリア</div>
+    <div class="row" id="areas"></div>
+  </div>
 
   <div class="sec">
     <div class="cap">モード</div>
@@ -81,6 +86,16 @@
   <div class="sec">
     <div class="cap">スポットへ移動</div>
     <div class="row" id="pois"></div>
+  </div>
+
+  <div class="sec">
+    <div class="cap">パフォーマンス</div>
+    <select id="perf">
+      <option value="fast">高速（30fps・低解像度・粗いタイル）</option>
+      <option value="balanced">バランス（30fps・等倍解像度）</option>
+      <option value="quality">高品質（60fps・高解像度・MSAA）</option>
+    </select>
+    <div class="hint">重い場合は「高速」を。視点を動かしていない間は描画を自動停止して負荷を下げます。</div>
   </div>
 
   <div class="sec">
@@ -112,7 +127,7 @@
   <div class="sec">
     <div class="cap">ゲーム（プロトタイプ）</div>
     <div class="row"><button id="btnGame">🪙 コインラリー開始</button></div>
-    <div class="hint">新宿の街に隠れた15枚のコインを探して集めよう。ウォークモード推奨。</div>
+    <div class="hint">街に隠れた15枚のコインを探して集めよう。ウォークモード推奨。</div>
   </div>
 </div>
 <button id="toggleHud" class="panel">☰</button>
@@ -132,46 +147,86 @@
 </div>
 
 <div id="credit">
-  出典: <a href="https://www.mlit.go.jp/plateau/" target="_blank" rel="noopener">国土交通省 Project PLATEAU</a>（3D都市モデル 新宿区）/
+  出典: <a href="https://www.mlit.go.jp/plateau/" target="_blank" rel="noopener">国土交通省 Project PLATEAU</a>（3D都市モデル 新宿区・港区）/
   <a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank" rel="noopener">地理院タイル</a>
 </div>
 
 <script>
 "use strict";
 // ---------------------------------------------------------------
-// 新宿3D探索 — Project PLATEAU 3D Tiles + CesiumJS（ionトークン不要構成）
+// 東京3D探索 — Project PLATEAU 3D Tiles + CesiumJS（ionトークン不要構成）
 // ---------------------------------------------------------------
 
-const TILESETS = {
-  // 東京都23区 2020年度 3D Tiles ストリーミング（G空間情報センター）
-  notex: [
-    "https://plateau.geospatial.jp/main/data/3d-tiles/bldg/13100_tokyo/13104_shinjuku-ku/notexture/tileset.json",
-    "https://assets.cms.plateau.reearth.io/assets/ad/52340f-3f7f-470e-918e-38eb9c27e2db/13104_shinjuku-ku_pref_2023_citygml_2_op_bldg_3dtiles_13104_shinjuku-ku_lod2/tileset.json",
-    "https://plateau.geospatial.jp/main/data/3d-tiles/bldg/13100_tokyo/13104_shinjuku-ku/low_resolution/tileset.json",
-  ],
-  tex: [
-    "https://plateau.geospatial.jp/main/data/3d-tiles/bldg/13100_tokyo/13104_shinjuku-ku/texture/tileset.json",
-    "https://plateau.geospatial.jp/main/data/3d-tiles/bldg/13100_tokyo/13104_shinjuku-ku/notexture/tileset.json",
-  ],
-  low: [
-    "https://plateau.geospatial.jp/main/data/3d-tiles/bldg/13100_tokyo/13104_shinjuku-ku/low_resolution/tileset.json",
-  ],
+// 東京都23区の3D Tilesストリーミング（G空間情報センター）のURLパターン
+const GSP = "https://plateau.geospatial.jp/main/data/3d-tiles/bldg/13100_tokyo";
+
+const AREAS = {
+  shinjuku: {
+    name: "新宿",
+    ward: "13104_shinjuku-ku",
+    // 新宿駅周辺の楕円体高（ジオイド高 ≈37m + 標高 ≈37m）
+    groundEllipsoidalH: 74,
+    extraLod2: [
+      "https://assets.cms.plateau.reearth.io/assets/ad/52340f-3f7f-470e-918e-38eb9c27e2db/13104_shinjuku-ku_pref_2023_citygml_2_op_bldg_3dtiles_13104_shinjuku-ku_lod2/tileset.json",
+    ],
+    home: { lon: 139.6953, lat: 35.6918 }, // 西新宿ビル群
+    pois: [
+      { name: "新宿駅",       lon: 139.7003, lat: 35.6900 },
+      { name: "都庁",         lon: 139.6917, lat: 35.6896 },
+      { name: "歌舞伎町",     lon: 139.7026, lat: 35.6938 },
+      { name: "西新宿ビル群", lon: 139.6953, lat: 35.6918 },
+      { name: "新宿御苑",     lon: 139.7100, lat: 35.6852 },
+    ],
+    coins: [
+      [139.7005, 35.6907], [139.7014, 35.6917], [139.6997, 35.6893],
+      [139.7021, 35.6935], [139.7033, 35.6944],
+      [139.6957, 35.6917], [139.6938, 35.6908], [139.6929, 35.6897], [139.6946, 35.6929],
+      [139.7002, 35.6877], [139.6993, 35.6866],
+      [139.7076, 35.6874], [139.7051, 35.6885],
+      [139.7042, 35.6905], [139.7060, 35.6920],
+    ],
+  },
+  roppongi: {
+    name: "六本木",
+    ward: "13103_minato-ku",
+    // 六本木交差点周辺の楕円体高（ジオイド高 ≈37m + 標高 ≈30m）
+    groundEllipsoidalH: 66,
+    extraLod2: [],
+    home: { lon: 139.7314, lat: 35.6627 }, // 六本木交差点
+    pois: [
+      { name: "六本木交差点",   lon: 139.7314, lat: 35.6627 },
+      { name: "六本木ヒルズ",   lon: 139.7292, lat: 35.6604 },
+      { name: "ミッドタウン",   lon: 139.7307, lat: 35.6657 },
+      { name: "東京タワー",     lon: 139.7454, lat: 35.6586 },
+      { name: "麻布十番",       lon: 139.7366, lat: 35.6565 },
+    ],
+    coins: [
+      [139.7314, 35.6627], [139.7300, 35.6620], [139.7330, 35.6634],
+      [139.7292, 35.6604], [139.7280, 35.6596], [139.7302, 35.6592], [139.7273, 35.6610],
+      [139.7307, 35.6657], [139.7295, 35.6668], [139.7320, 35.6650],
+      [139.7454, 35.6586], [139.7440, 35.6595], [139.7425, 35.6575],
+      [139.7366, 35.6565], [139.7350, 35.6580],
+    ],
+  },
 };
 
-const POIS = [
-  { name: "新宿駅",     lon: 139.7003, lat: 35.6900 },
-  { name: "都庁",       lon: 139.6917, lat: 35.6896 },
-  { name: "歌舞伎町",   lon: 139.7026, lat: 35.6938 },
-  { name: "西新宿ビル群", lon: 139.6953, lat: 35.6918 },
-  { name: "新宿御苑",   lon: 139.7100, lat: 35.6852 },
-];
+let areaKey = localStorage.getItem("sjk_area");
+if (!AREAS[areaKey]) areaKey = "shinjuku";
+const area = () => AREAS[areaKey];
 
-// 新宿駅周辺の楕円体高（ジオイド高 ≈37m + 標高 ≈37m）。既定オフセットで地面を楕円体面へ落とす。
-const GROUND_ELLIPSOIDAL_H = 74;
+function tilesetUrls(quality) {
+  const a = area();
+  const base = `${GSP}/${a.ward}`;
+  const urls = {
+    notex: [`${base}/notexture/tileset.json`, ...a.extraLod2, `${base}/low_resolution/tileset.json`],
+    tex:   [`${base}/texture/tileset.json`, `${base}/notexture/tileset.json`],
+    low:   [`${base}/low_resolution/tileset.json`],
+  };
+  return urls[quality] || urls.notex;
+}
+
 const EYE = 1.7;
-
 const IMG_PHOTO = "https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg";
-const IMG_PALE  = "https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png";
 
 const $ = (id) => document.getElementById(id);
 const status = (msg, sticky) => {
@@ -191,17 +246,50 @@ const viewer = new Cesium.Viewer("cesiumContainer", {
   baseLayerPicker: false, geocoder: false, homeButton: false, sceneModePicker: false,
   navigationHelpButton: false, animation: false, timeline: false, fullscreenButton: false,
   selectionIndicator: false, infoBox: false,
+  requestRenderMode: true,               // 変化がない間は再描画しない（省電力・軽量化）
+  maximumRenderTimeChange: Infinity,
 });
 const scene = viewer.scene;
 const camera = viewer.camera;
 scene.globe.depthTestAgainstTerrain = true;
-scene.msaaSamples = 4;
-viewer.resolutionScale = Math.min(window.devicePixelRatio || 1, 1.5);
 scene.screenSpaceCameraController.enableCollisionDetection = false;
+const requestRender = () => scene.requestRender();
+
+// ---- パフォーマンスプリセット ----
+const PERF = {
+  fast:     { fps: 30, res: 0.75, mse: 24, msaa: 1, fxaa: false, fog: false },
+  balanced: { fps: 30, res: 1.0,  mse: 16, msaa: 1, fxaa: true,  fog: true  },
+  quality:  { fps: 60, res: Math.min(window.devicePixelRatio || 1, 1.5), mse: 8, msaa: 4, fxaa: true, fog: true },
+};
+function applyPerf() {
+  const p = PERF[$("perf").value] || PERF.fast;
+  viewer.targetFrameRate = p.fps;                 // 画面更新頻度の上限
+  viewer.resolutionScale = p.res;                 // 描画解像度
+  scene.msaaSamples = p.msaa;
+  scene.postProcessStages.fxaa.enabled = p.fxaa;
+  scene.fog.enabled = p.fog;
+  scene.skyAtmosphere.show = p.fog;
+  if (tileset) tileset.maximumScreenSpaceError = p.mse;  // タイルの詳細度
+  localStorage.setItem("sjk_perf", $("perf").value);
+  requestRender();
+}
+$("perf").onchange = applyPerf;
+
+// ウォーク中・ゲーム中は毎フレーム更新が必要なので requestRenderMode を切る
+function updateRenderMode() {
+  scene.requestRenderMode = !(walking || gameOn);
+  requestRender();
+}
 
 // ---- 3D Tiles 読み込み（候補URLを順に試すフォールバック付き）----
 let tileset = null;
-let heightOffset = parseFloat(localStorage.getItem("sjk_offset") ?? String(-GROUND_ELLIPSOIDAL_H));
+let heightOffset = 0;
+function loadOffsetForArea() {
+  const saved = localStorage.getItem(`sjk_offset_${areaKey}`);
+  heightOffset = saved !== null ? parseFloat(saved) : -area().groundEllipsoidalH;
+  $("offset").value = heightOffset;
+  $("offVal").textContent = heightOffset;
+}
 
 async function loadTileset(urls) {
   status("3D都市モデルを読み込み中…", true);
@@ -209,8 +297,9 @@ async function loadTileset(urls) {
   let lastErr = null;
   for (const url of urls) {
     try {
+      const p = PERF[$("perf").value] || PERF.fast;
       const ts = await Cesium.Cesium3DTileset.fromUrl(url, {
-        maximumScreenSpaceError: 16,
+        maximumScreenSpaceError: p.mse,
         dynamicScreenSpaceError: true,
         skipLevelOfDetail: true,
         cacheBytes: 512 * 1024 * 1024,
@@ -219,6 +308,7 @@ async function loadTileset(urls) {
       applyOffset();
       applyStyle();
       status("3D都市モデルを読み込みました ✅");
+      requestRender();
       return ts;
     } catch (e) {
       console.warn("tileset failed:", url, e);
@@ -238,10 +328,11 @@ function applyOffset() {
   const translation = Cesium.Cartesian3.subtract(moved, surface, new Cesium.Cartesian3());
   tileset.modelMatrix = Cesium.Matrix4.fromTranslation(translation);
   if (neonShader) updateNeonGround();
+  requestRender();
 }
 
-// 現在のオフセット適用後の、新宿の地面のおおよその楕円体高
-const groundH = () => GROUND_ELLIPSOIDAL_H + heightOffset;
+// 現在のオフセット適用後の、対象エリアの地面のおおよその楕円体高
+const groundH = () => area().groundEllipsoidalH + heightOffset;
 
 // ---- 見た目: リアル / ネオン ----
 let neonShader = null;
@@ -265,7 +356,8 @@ function makeNeonShader() {
 }
 function updateNeonGround() {
   if (!neonShader) return;
-  const g = Cesium.Cartesian3.fromDegrees(139.70, 35.69, groundH());
+  const a = area();
+  const g = Cesium.Cartesian3.fromDegrees(a.home.lon, a.home.lat, groundH());
   neonShader.setUniform("u_ground", Cesium.Cartesian3.magnitude(g) - 6371000.0);
 }
 
@@ -291,6 +383,7 @@ function applyStyle() {
     setClockHourJST(12); // 正午
   }
   localStorage.setItem("sjk_neon", neon ? "1" : "0");
+  requestRender();
 }
 $("btnReal").onclick = () => { neon = false; applyStyle(); };
 $("btnNeon").onclick = () => { neon = true; applyStyle(); };
@@ -298,7 +391,7 @@ $("btnNeon").onclick = () => { neon = true; applyStyle(); };
 // ---- 画質切替 / カスタムURL ----
 $("quality").onchange = () => {
   localStorage.setItem("sjk_quality", $("quality").value);
-  loadTileset(TILESETS[$("quality").value]).catch(() => {});
+  loadTileset(tilesetUrls($("quality").value)).catch(() => {});
 };
 $("btnLoadUrl").onclick = () => {
   const u = $("customUrl").value.trim();
@@ -306,15 +399,13 @@ $("btnLoadUrl").onclick = () => {
 };
 
 // ---- 高さオフセット ----
-$("offset").value = heightOffset;
-$("offVal").textContent = heightOffset;
 $("offset").oninput = () => {
   heightOffset = parseFloat($("offset").value);
-  localStorage.setItem("sjk_offset", String(heightOffset));
+  localStorage.setItem(`sjk_offset_${areaKey}`, String(heightOffset));
   applyOffset();
 };
 
-// ---- POI ----
+// ---- POI / エリア ----
 function flyToPoi(p, walkLand) {
   if (walking && walkLand !== false) {
     placeWalker(p.lon, p.lat);
@@ -326,11 +417,39 @@ function flyToPoi(p, walkLand) {
     duration: 2.2,
   });
 }
-for (const p of POIS) {
-  const b = document.createElement("button");
-  b.textContent = p.name;
-  b.onclick = () => flyToPoi(p);
-  $("pois").appendChild(b);
+function buildPoiButtons() {
+  $("pois").innerHTML = "";
+  for (const p of area().pois) {
+    const b = document.createElement("button");
+    b.textContent = p.name;
+    b.onclick = () => flyToPoi(p);
+    $("pois").appendChild(b);
+  }
+}
+function buildAreaButtons() {
+  $("areas").innerHTML = "";
+  for (const key of Object.keys(AREAS)) {
+    const b = document.createElement("button");
+    b.textContent = AREAS[key].name;
+    b.classList.toggle("on", key === areaKey);
+    b.onclick = () => switchArea(key);
+    $("areas").appendChild(b);
+  }
+}
+function switchArea(key) {
+  if (key === areaKey || !AREAS[key]) return;
+  areaKey = key;
+  localStorage.setItem("sjk_area", areaKey);
+  stopGame();
+  buildAreaButtons();
+  buildPoiButtons();
+  loadOffsetForArea();
+  loadTileset(tilesetUrls($("quality").value)).catch(() => {});
+  const home = area().pois.find(p =>
+    p.lon === area().home.lon && p.lat === area().home.lat) || area().pois[0];
+  if (walking) placeWalker(home.lon, home.lat);
+  else flyToPoi(home, false);
+  status(`エリアを「${area().name}」に切り替えました`);
 }
 
 // ---- ウォークモード ----
@@ -393,6 +512,7 @@ function setWalking(on) {
     if (document.pointerLockElement === canvas) document.exitPointerLock();
     $("crosshair").style.display = "none";
   }
+  updateRenderMode();
 }
 $("btnWalk").onclick = () => setWalking(true);
 $("btnFly").onclick = () => setWalking(false);
@@ -415,7 +535,6 @@ function stepWalker(dt) {
   if (keys["KeyA"] || keys["ArrowLeft"]) right -= 1;
 
   const carto = Cesium.Cartographic.fromCartesian(camera.position);
-  const curGround = sampleGround(carto);
   const eyeH = carto.height;
 
   // 水平移動（経緯度を直接進める簡易ENU移動）
@@ -485,14 +604,6 @@ handler.setInputAction((movement) => {
 $("infoClose").onclick = () => $("info").style.display = "none";
 
 // ---- コインラリー（ゲームのプロトタイプ）----
-const COIN_SPOTS = [
-  [139.7005, 35.6907], [139.7014, 35.6917], [139.6997, 35.6893],
-  [139.7021, 35.6935], [139.7033, 35.6944],
-  [139.6957, 35.6917], [139.6938, 35.6908], [139.6929, 35.6897], [139.6946, 35.6929],
-  [139.7002, 35.6877], [139.6993, 35.6866],
-  [139.7076, 35.6874], [139.7051, 35.6885],
-  [139.7042, 35.6905], [139.7060, 35.6920],
-];
 let gameOn = false, coins = [], coinEntities = [], collected = 0, gameStart = 0;
 let audioCtx = null;
 function beep(freq, dur = 0.12) {
@@ -509,12 +620,14 @@ function beep(freq, dur = 0.12) {
 
 async function startGame() {
   stopGame();
+  const SPOTS = area().coins;
   gameOn = true; collected = 0; gameStart = performance.now();
   $("game").style.display = "block";
-  $("coinTotal").textContent = COIN_SPOTS.length;
+  $("coinTotal").textContent = SPOTS.length;
   $("coinCount").textContent = "0";
+  updateRenderMode();
 
-  const cartos = COIN_SPOTS.map(([lon, lat]) => Cesium.Cartographic.fromDegrees(lon, lat));
+  const cartos = SPOTS.map(([lon, lat]) => Cesium.Cartographic.fromDegrees(lon, lat));
   let heights = cartos.map(() => groundH());
   try {
     if (tileset) {
@@ -523,7 +636,7 @@ async function startGame() {
     }
   } catch (_) {}
 
-  coins = COIN_SPOTS.map(([lon, lat], i) => {
+  coins = SPOTS.map(([lon, lat], i) => {
     const pos = Cesium.Cartesian3.fromDegrees(lon, lat, heights[i] + 2.5);
     const ent = viewer.entities.add({
       position: pos,
@@ -536,7 +649,7 @@ async function startGame() {
     coinEntities.push(ent);
     return { pos, ent, got: false };
   });
-  status("コインラリー開始！新宿の街で15枚のコインを探そう 🪙");
+  status(`コインラリー開始！${area().name}の街で${SPOTS.length}枚のコインを探そう 🪙`);
   if (!walking) setWalking(true);
 }
 function stopGame() {
@@ -544,6 +657,7 @@ function stopGame() {
   for (const c of coins) viewer.entities.remove(c.ent);
   coins = []; coinEntities = [];
   $("game").style.display = "none";
+  updateRenderMode();
 }
 $("btnGame").onclick = startGame;
 $("btnGameStop").onclick = stopGame;
@@ -563,6 +677,7 @@ function stepGame() {
         beep(1320, 0.3); setTimeout(() => beep(1760, 0.4), 180);
         status(`🎉 全コイン獲得！タイム ${$("gameTime").textContent} — おつかれさまでした！`, true);
         gameOn = false;
+        updateRenderMode();
       }
     }
   }
@@ -578,15 +693,21 @@ if (matchMedia("(max-width: 700px)").matches) $("toggleHud").style.display = "bl
 // ---- 起動 ----
 (function init() {
   const q = localStorage.getItem("sjk_quality") || "notex";
-  $("quality").value = TILESETS[q] ? q : "notex";
+  $("quality").value = ["notex","tex","low"].includes(q) ? q : "notex";
+  $("perf").value = localStorage.getItem("sjk_perf") || "fast";
+  applyPerf();
   neon = localStorage.getItem("sjk_neon") === "1";
+  buildAreaButtons();
+  buildPoiButtons();
+  loadOffsetForArea();
   applyStyle();
+  const home = area().home;
   camera.setView({
-    destination: Cesium.Cartesian3.fromDegrees(139.7040, 35.6790, groundH() + 1400),
+    destination: Cesium.Cartesian3.fromDegrees(home.lon + 0.006, home.lat - 0.010, groundH() + 1400),
     orientation: { heading: Cesium.Math.toRadians(-20), pitch: Cesium.Math.toRadians(-38), roll: 0 },
   });
-  loadTileset(TILESETS[$("quality").value])
-    .then(() => flyToPoi(POIS[3], false))
+  loadTileset(tilesetUrls($("quality").value))
+    .then(() => flyToPoi(area().home, false))
     .catch(() => {});
 })();
 </script>
