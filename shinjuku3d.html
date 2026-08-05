@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>新宿3D探索 — Project PLATEAU</title>
+<script>window.CESIUM_BASE_URL = "https://cdn.jsdelivr.net/npm/cesium@1.130/Build/Cesium/";</script>
+<script src="https://cdn.jsdelivr.net/npm/cesium@1.130/Build/Cesium/Cesium.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cesium@1.130/Build/Cesium/Widgets/widgets.css">
+<style>
+  html, body, #cesiumContainer { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden; }
+  body { font-family: "Hiragino Sans", "Noto Sans JP", Meiryo, sans-serif; background: #000; }
+
+  .panel {
+    position: absolute; z-index: 10;
+    background: rgba(15, 20, 35, 0.82); color: #e8ecf5;
+    border: 1px solid rgba(120, 160, 255, 0.25); border-radius: 10px;
+    backdrop-filter: blur(6px); padding: 10px 12px; font-size: 13px;
+    box-shadow: 0 4px 18px rgba(0,0,0,.45);
+  }
+  #hud { top: 10px; left: 10px; width: 258px; max-height: calc(100% - 90px); overflow-y: auto; }
+  #hud h1 { font-size: 15px; margin: 0 0 2px; letter-spacing: .04em; }
+  #hud h1 small { font-weight: normal; color: #9fb4dd; font-size: 10px; display: block; margin-top: 2px; }
+  .sec { margin-top: 9px; padding-top: 8px; border-top: 1px solid rgba(120,160,255,.18); }
+  .sec .cap { font-size: 11px; color: #8fa8d8; margin-bottom: 5px; letter-spacing: .06em; }
+  .row { display: flex; flex-wrap: wrap; gap: 5px; }
+  button, select, input[type=text] {
+    font: inherit; font-size: 12px; color: #e8ecf5;
+    background: rgba(70, 95, 160, 0.35); border: 1px solid rgba(130,165,255,.35);
+    border-radius: 6px; padding: 4px 9px; cursor: pointer;
+  }
+  button:hover { background: rgba(95, 125, 205, 0.5); }
+  button.on { background: #3a6df0; border-color: #6f9aff; }
+  select { width: 100%; }
+  input[type=range] { width: 100%; }
+  input[type=text] { width: 100%; box-sizing: border-box; cursor: text; }
+  .hint { font-size: 11px; color: #93a5c9; line-height: 1.55; margin-top: 4px; }
+  kbd { background:#2a3a5f; border-radius:3px; padding:0 4px; font-size:10px; border:1px solid #4a5f92; }
+
+  #status { top: 10px; left: 50%; transform: translateX(-50%); font-size: 13px; display: none; max-width: 70%; text-align: center; }
+  #game { top: 10px; right: 10px; display: none; text-align: center; min-width: 130px; }
+  #game .big { font-size: 22px; font-weight: bold; color: #ffd452; }
+  #game .time { font-size: 14px; color: #bcd; }
+  #info { bottom: 40px; right: 10px; width: 280px; max-height: 45%; overflow-y: auto; display: none; }
+  #info h2 { font-size: 13px; margin: 0 0 6px; color: #ffd452; }
+  #info table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  #info td { padding: 2px 4px; border-bottom: 1px solid rgba(255,255,255,.08); vertical-align: top; }
+  #info td:first-child { color: #9fb4dd; white-space: nowrap; }
+  #info .x { position: absolute; top: 6px; right: 8px; cursor: pointer; color: #9fb4dd; }
+  #credit {
+    position: absolute; bottom: 0; left: 0; right: 0; z-index: 9;
+    background: rgba(0,0,0,.55); color: #aab; font-size: 10px; padding: 3px 8px; text-align: center;
+  }
+  #credit a { color: #8fb0ff; }
+  #crosshair { position: absolute; top: 50%; left: 50%; width: 14px; height: 14px; margin: -7px;
+    z-index: 8; display: none; pointer-events: none; }
+  #crosshair::before, #crosshair::after { content: ""; position: absolute; background: rgba(255,255,255,.8); }
+  #crosshair::before { left: 6px; top: 0; width: 2px; height: 14px; }
+  #crosshair::after { top: 6px; left: 0; width: 14px; height: 2px; }
+  #toggleHud { position: absolute; top: 10px; left: 278px; z-index: 11; display: none; }
+  .cesium-viewer-bottom { display: none !important; }
+  @media (max-width: 700px) { #hud { width: 210px; font-size: 12px; } }
+</style>
+</head>
+<body>
+<div id="cesiumContainer"></div>
+<div id="crosshair"></div>
+
+<div id="hud" class="panel">
+  <h1>新宿 3D探索<small>Project PLATEAU 3D都市モデル（国土交通省）</small></h1>
+
+  <div class="sec">
+    <div class="cap">モード</div>
+    <div class="row">
+      <button id="btnFly" class="on">🚁 フライト</button>
+      <button id="btnWalk">🚶 ウォーク</button>
+    </div>
+    <div class="hint" id="modeHint">ドラッグ: 回転 / 右ドラッグ・ホイール: ズーム / Ctrl+ドラッグ: 傾き。建物クリックで属性表示。</div>
+  </div>
+
+  <div class="sec">
+    <div class="cap">スポットへ移動</div>
+    <div class="row" id="pois"></div>
+  </div>
+
+  <div class="sec">
+    <div class="cap">見た目</div>
+    <div class="row">
+      <button id="btnReal" class="on">☀️ リアル</button>
+      <button id="btnNeon">🌃 ネオン</button>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="cap">建物データ（3D Tiles）</div>
+    <select id="quality">
+      <option value="notex">LOD2 テクスチャなし（軽い・推奨）</option>
+      <option value="tex">LOD2 テクスチャあり（重い）</option>
+      <option value="low">LOD1 低解像度（最軽量）</option>
+    </select>
+    <div class="hint" style="margin-top:6px">タイルURLを直接指定（他の都市も可）:</div>
+    <input type="text" id="customUrl" placeholder="https://…/tileset.json">
+    <div class="row" style="margin-top:5px"><button id="btnLoadUrl">読み込み</button></div>
+  </div>
+
+  <div class="sec">
+    <div class="cap">地面合わせ（高さオフセット: <span id="offVal"></span> m）</div>
+    <input type="range" id="offset" min="-120" max="20" step="1">
+    <div class="hint">PLATEAUの高さは楕円体高基準のため、地図と建物の上下ズレをここで微調整できます。</div>
+  </div>
+
+  <div class="sec">
+    <div class="cap">ゲーム（プロトタイプ）</div>
+    <div class="row"><button id="btnGame">🪙 コインラリー開始</button></div>
+    <div class="hint">新宿の街に隠れた15枚のコインを探して集めよう。ウォークモード推奨。</div>
+  </div>
+</div>
+<button id="toggleHud" class="panel">☰</button>
+
+<div id="status" class="panel"></div>
+
+<div id="game" class="panel">
+  <div class="big"><span id="coinCount">0</span> / <span id="coinTotal">15</span> 🪙</div>
+  <div class="time" id="gameTime">0:00</div>
+  <div class="row" style="justify-content:center;margin-top:6px"><button id="btnGameStop">終了</button></div>
+</div>
+
+<div id="info" class="panel">
+  <span class="x" id="infoClose">✕</span>
+  <h2>建物情報</h2>
+  <table id="infoTable"></table>
+</div>
+
+<div id="credit">
+  出典: <a href="https://www.mlit.go.jp/plateau/" target="_blank" rel="noopener">国土交通省 Project PLATEAU</a>（3D都市モデル 新宿区）/
+  <a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank" rel="noopener">地理院タイル</a>
+</div>
+
+<script>
+"use strict";
+// ---------------------------------------------------------------
+// 新宿3D探索 — Project PLATEAU 3D Tiles + CesiumJS（ionトークン不要構成）
+// ---------------------------------------------------------------
+
+const TILESETS = {
+  // 東京都23区 2020年度 3D Tiles ストリーミング（G空間情報センター）
+  notex: [
+    "https://plateau.geospatial.jp/main/data/3d-tiles/bldg/13100_tokyo/13104_shinjuku-ku/notexture/tileset.json",
+    "https://assets.cms.plateau.reearth.io/assets/ad/52340f-3f7f-470e-918e-38eb9c27e2db/13104_shinjuku-ku_pref_2023_citygml_2_op_bldg_3dtiles_13104_shinjuku-ku_lod2/tileset.json",
+    "https://plateau.geospatial.jp/main/data/3d-tiles/bldg/13100_tokyo/13104_shinjuku-ku/low_resolution/tileset.json",
+  ],
+  tex: [
+    "https://plateau.geospatial.jp/main/data/3d-tiles/bldg/13100_tokyo/13104_shinjuku-ku/texture/tileset.json",
+    "https://plateau.geospatial.jp/main/data/3d-tiles/bldg/13100_tokyo/13104_shinjuku-ku/notexture/tileset.json",
+  ],
+  low: [
+    "https://plateau.geospatial.jp/main/data/3d-tiles/bldg/13100_tokyo/13104_shinjuku-ku/low_resolution/tileset.json",
+  ],
+};
+
+const POIS = [
+  { name: "新宿駅",     lon: 139.7003, lat: 35.6900 },
+  { name: "都庁",       lon: 139.6917, lat: 35.6896 },
+  { name: "歌舞伎町",   lon: 139.7026, lat: 35.6938 },
+  { name: "西新宿ビル群", lon: 139.6953, lat: 35.6918 },
+  { name: "新宿御苑",   lon: 139.7100, lat: 35.6852 },
+];
+
+// 新宿駅周辺の楕円体高（ジオイド高 ≈37m + 標高 ≈37m）。既定オフセットで地面を楕円体面へ落とす。
+const GROUND_ELLIPSOIDAL_H = 74;
+const EYE = 1.7;
+
+const IMG_PHOTO = "https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg";
+const IMG_PALE  = "https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png";
+
+const $ = (id) => document.getElementById(id);
+const status = (msg, sticky) => {
+  const el = $("status");
+  el.textContent = msg; el.style.display = "block";
+  clearTimeout(status._t);
+  if (!sticky) status._t = setTimeout(() => el.style.display = "none", 5000);
+};
+
+// ---- Viewer（ion不使用: ベースレイヤは地理院タイル、地形は楕円体）----
+const photoLayer = new Cesium.ImageryLayer(new Cesium.UrlTemplateImageryProvider({
+  url: IMG_PHOTO, maximumLevel: 18,
+  credit: new Cesium.Credit("地理院タイル（シームレス空中写真）"),
+}));
+const viewer = new Cesium.Viewer("cesiumContainer", {
+  baseLayer: photoLayer,
+  baseLayerPicker: false, geocoder: false, homeButton: false, sceneModePicker: false,
+  navigationHelpButton: false, animation: false, timeline: false, fullscreenButton: false,
+  selectionIndicator: false, infoBox: false,
+});
+const scene = viewer.scene;
+const camera = viewer.camera;
+scene.globe.depthTestAgainstTerrain = true;
+scene.msaaSamples = 4;
+viewer.resolutionScale = Math.min(window.devicePixelRatio || 1, 1.5);
+scene.screenSpaceCameraController.enableCollisionDetection = false;
+
+// ---- 3D Tiles 読み込み（候補URLを順に試すフォールバック付き）----
+let tileset = null;
+let heightOffset = parseFloat(localStorage.getItem("sjk_offset") ?? String(-GROUND_ELLIPSOIDAL_H));
+
+async function loadTileset(urls) {
+  status("3D都市モデルを読み込み中…", true);
+  if (tileset) { scene.primitives.remove(tileset); tileset = null; }
+  let lastErr = null;
+  for (const url of urls) {
+    try {
+      const ts = await Cesium.Cesium3DTileset.fromUrl(url, {
+        maximumScreenSpaceError: 16,
+        dynamicScreenSpaceError: true,
+        skipLevelOfDetail: true,
+        cacheBytes: 512 * 1024 * 1024,
+      });
+      tileset = scene.primitives.add(ts);
+      applyOffset();
+      applyStyle();
+      status("3D都市モデルを読み込みました ✅");
+      return ts;
+    } catch (e) {
+      console.warn("tileset failed:", url, e);
+      lastErr = e;
+    }
+  }
+  status("3D都市モデルの読み込みに失敗しました。別の画質を試すか、タイルURLを直接指定してください。", true);
+  throw lastErr;
+}
+
+function applyOffset() {
+  if (!tileset) return;
+  $("offVal").textContent = heightOffset;
+  const c = Cesium.Cartographic.fromCartesian(tileset.boundingSphere.center);
+  const surface = Cesium.Cartesian3.fromRadians(c.longitude, c.latitude, 0);
+  const moved   = Cesium.Cartesian3.fromRadians(c.longitude, c.latitude, heightOffset);
+  const translation = Cesium.Cartesian3.subtract(moved, surface, new Cesium.Cartesian3());
+  tileset.modelMatrix = Cesium.Matrix4.fromTranslation(translation);
+  if (neonShader) updateNeonGround();
+}
+
+// 現在のオフセット適用後の、新宿の地面のおおよその楕円体高
+const groundH = () => GROUND_ELLIPSOIDAL_H + heightOffset;
+
+// ---- 見た目: リアル / ネオン ----
+let neonShader = null;
+let neon = false;
+
+function makeNeonShader() {
+  return new Cesium.CustomShader({
+    uniforms: { u_ground: { type: Cesium.UniformType.FLOAT, value: 0.0 } },
+    fragmentShaderText: `
+      void fragmentMain(FragmentInput fsInput, inout czm_modelMaterial material) {
+        float h = length(fsInput.attributes.positionWC) - 6371000.0;
+        float t = clamp((h - u_ground) / 200.0, 0.0, 1.0);
+        vec3 base = mix(vec3(0.04, 0.07, 0.18), vec3(0.0, 0.85, 1.0), t);
+        vec3 n = fsInput.attributes.normalEC;
+        vec3 v = normalize(-fsInput.attributes.positionEC);
+        float fresnel = pow(1.0 - abs(dot(normalize(n), v)), 2.0);
+        material.diffuse = base;
+        material.emissive = base * 0.55 + vec3(0.9, 0.3, 0.9) * fresnel * 0.35;
+      }`,
+  });
+}
+function updateNeonGround() {
+  if (!neonShader) return;
+  const g = Cesium.Cartesian3.fromDegrees(139.70, 35.69, groundH());
+  neonShader.setUniform("u_ground", Cesium.Cartesian3.magnitude(g) - 6371000.0);
+}
+
+function setClockHourJST(hour) {
+  viewer.clock.currentTime = Cesium.JulianDate.fromIso8601(
+    `2026-08-05T${String((hour + 15) % 24).padStart(2, "0")}:00:00Z`);
+}
+
+function applyStyle() {
+  $("btnReal").classList.toggle("on", !neon);
+  $("btnNeon").classList.toggle("on", neon);
+  if (neon) {
+    if (!neonShader) neonShader = makeNeonShader();
+    updateNeonGround();
+    if (tileset) tileset.customShader = neonShader;
+    photoLayer.alpha = 0.18;
+    scene.globe.baseColor = Cesium.Color.fromCssColorString("#070b16");
+    setClockHourJST(0); // 深夜
+  } else {
+    if (tileset) tileset.customShader = undefined;
+    photoLayer.alpha = 1.0;
+    scene.globe.baseColor = Cesium.Color.fromCssColorString("#1b2a3a");
+    setClockHourJST(12); // 正午
+  }
+  localStorage.setItem("sjk_neon", neon ? "1" : "0");
+}
+$("btnReal").onclick = () => { neon = false; applyStyle(); };
+$("btnNeon").onclick = () => { neon = true; applyStyle(); };
+
+// ---- 画質切替 / カスタムURL ----
+$("quality").onchange = () => {
+  localStorage.setItem("sjk_quality", $("quality").value);
+  loadTileset(TILESETS[$("quality").value]).catch(() => {});
+};
+$("btnLoadUrl").onclick = () => {
+  const u = $("customUrl").value.trim();
+  if (u) loadTileset([u]).catch(() => {});
+};
+
+// ---- 高さオフセット ----
+$("offset").value = heightOffset;
+$("offVal").textContent = heightOffset;
+$("offset").oninput = () => {
+  heightOffset = parseFloat($("offset").value);
+  localStorage.setItem("sjk_offset", String(heightOffset));
+  applyOffset();
+};
+
+// ---- POI ----
+function flyToPoi(p, walkLand) {
+  if (walking && walkLand !== false) {
+    placeWalker(p.lon, p.lat);
+    return;
+  }
+  camera.flyTo({
+    destination: Cesium.Cartesian3.fromDegrees(p.lon, p.lat - 0.006, groundH() + 420),
+    orientation: { heading: 0, pitch: Cesium.Math.toRadians(-32), roll: 0 },
+    duration: 2.2,
+  });
+}
+for (const p of POIS) {
+  const b = document.createElement("button");
+  b.textContent = p.name;
+  b.onclick = () => flyToPoi(p);
+  $("pois").appendChild(b);
+}
+
+// ---- ウォークモード ----
+let walking = false;
+let heading = 0, pitch = 0;
+let vSpeed = 0, airborne = false;
+const keys = {};
+document.addEventListener("keydown", (e) => {
+  keys[e.code] = true;
+  if (walking && ["Space","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.code)) e.preventDefault();
+});
+document.addEventListener("keyup", (e) => { keys[e.code] = false; });
+
+const canvas = viewer.canvas;
+document.addEventListener("pointerlockchange", () => {
+  $("crosshair").style.display = (document.pointerLockElement === canvas && walking) ? "block" : "none";
+});
+document.addEventListener("mousemove", (e) => {
+  if (!walking || document.pointerLockElement !== canvas) return;
+  heading += e.movementX * 0.0022;
+  pitch = Cesium.Math.clamp(pitch - e.movementY * 0.0022,
+    Cesium.Math.toRadians(-85), Cesium.Math.toRadians(85));
+});
+canvas.addEventListener("click", () => {
+  if (walking && document.pointerLockElement !== canvas) canvas.requestPointerLock();
+});
+
+function sampleGround(cartographic) {
+  let h;
+  try { h = scene.sampleHeight(cartographic, coinEntities); } catch (_) { h = undefined; }
+  if (h === undefined || h === null || !isFinite(h)) h = groundH();
+  return Math.max(h, groundH() - 5);
+}
+
+function placeWalker(lon, lat) {
+  const carto = Cesium.Cartographic.fromDegrees(lon, lat);
+  const g = sampleGround(carto);
+  camera.setView({
+    destination: Cesium.Cartesian3.fromDegrees(lon, lat, g + EYE),
+    orientation: { heading, pitch: 0, roll: 0 },
+  });
+  pitch = 0; vSpeed = 0; airborne = false;
+}
+
+function setWalking(on) {
+  walking = on;
+  $("btnWalk").classList.toggle("on", on);
+  $("btnFly").classList.toggle("on", !on);
+  scene.screenSpaceCameraController.enableInputs = !on;
+  $("modeHint").innerHTML = on
+    ? "画面クリックでマウス視点。<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 移動 / <kbd>Shift</kbd> ダッシュ / <kbd>Space</kbd> ジャンプ / <kbd>Esc</kbd> マウス解放"
+    : "ドラッグ: 回転 / 右ドラッグ・ホイール: ズーム / Ctrl+ドラッグ: 傾き。建物クリックで属性表示。";
+  if (on) {
+    heading = camera.heading;
+    const c = Cesium.Cartographic.fromCartesian(camera.position);
+    placeWalker(Cesium.Math.toDegrees(c.longitude), Cesium.Math.toDegrees(c.latitude));
+    canvas.requestPointerLock();
+    status("ウォークモード: 画面をクリックして視点操作を開始");
+  } else {
+    if (document.pointerLockElement === canvas) document.exitPointerLock();
+    $("crosshair").style.display = "none";
+  }
+}
+$("btnWalk").onclick = () => setWalking(true);
+$("btnFly").onclick = () => setWalking(false);
+
+let lastT = performance.now();
+scene.preUpdate.addEventListener(() => {
+  const now = performance.now();
+  const dt = Math.min((now - lastT) / 1000, 0.1);
+  lastT = now;
+  if (walking) stepWalker(dt);
+  if (gameOn) stepGame();
+});
+
+function stepWalker(dt) {
+  const speed = (keys["ShiftLeft"] || keys["ShiftRight"]) ? 16 : 5.5;
+  let fwd = 0, right = 0;
+  if (keys["KeyW"] || keys["ArrowUp"]) fwd += 1;
+  if (keys["KeyS"] || keys["ArrowDown"]) fwd -= 1;
+  if (keys["KeyD"] || keys["ArrowRight"]) right += 1;
+  if (keys["KeyA"] || keys["ArrowLeft"]) right -= 1;
+
+  const carto = Cesium.Cartographic.fromCartesian(camera.position);
+  const curGround = sampleGround(carto);
+  const eyeH = carto.height;
+
+  // 水平移動（経緯度を直接進める簡易ENU移動）
+  let nextLon = Cesium.Math.toDegrees(carto.longitude);
+  let nextLat = Cesium.Math.toDegrees(carto.latitude);
+  if (fwd !== 0 || right !== 0) {
+    const len = Math.hypot(fwd, right);
+    const dist = speed * dt / len;
+    const dx = (Math.sin(heading) * fwd + Math.cos(heading) * right) * dist; // 東方向 m
+    const dy = (Math.cos(heading) * fwd - Math.sin(heading) * right) * dist; // 北方向 m
+    const mPerDegLat = 111320;
+    const mPerDegLon = mPerDegLat * Math.cos(carto.latitude);
+    const candLon = nextLon + dx / mPerDegLon;
+    const candLat = nextLat + dy / mPerDegLat;
+    const candGround = sampleGround(Cesium.Cartographic.fromDegrees(candLon, candLat));
+    // 段差2.2m超は壁として進入不可（ジャンプ中は少し緩和）
+    const step = candGround - (eyeH - EYE);
+    if (step <= 2.2 || (airborne && candGround < eyeH - EYE + 0.5)) {
+      nextLon = candLon; nextLat = candLat;
+    }
+  }
+
+  const ground = sampleGround(Cesium.Cartographic.fromDegrees(nextLon, nextLat));
+  let newEye;
+  if (keys["Space"] && !airborne) { vSpeed = 6.5; airborne = true; }
+  if (airborne) {
+    vSpeed -= 9.8 * dt;
+    newEye = eyeH + vSpeed * dt;
+    if (newEye <= ground + EYE) { newEye = ground + EYE; airborne = false; vSpeed = 0; }
+  } else {
+    const target = ground + EYE;
+    if (target < eyeH - 3) {
+      // 足元に地面がない（屋上から出た等）→ 落下開始
+      airborne = true; vSpeed = 0; newEye = eyeH;
+    } else {
+      newEye = target > eyeH + 8 ? target : Cesium.Math.lerp(eyeH, target, Math.min(1, dt * 12));
+    }
+  }
+
+  camera.setView({
+    destination: Cesium.Cartesian3.fromDegrees(nextLon, nextLat, newEye),
+    orientation: { heading, pitch, roll: 0 },
+  });
+}
+
+// ---- 建物クリックで属性表示（フライトモード時）----
+const handler = new Cesium.ScreenSpaceEventHandler(canvas);
+handler.setInputAction((movement) => {
+  if (walking) return;
+  const picked = scene.pick(movement.position);
+  if (picked instanceof Cesium.Cesium3DTileFeature) {
+    const table = $("infoTable");
+    table.innerHTML = "";
+    const ids = picked.getPropertyIds ? picked.getPropertyIds() : [];
+    let rows = 0;
+    for (const id of ids) {
+      const v = picked.getProperty(id);
+      if (v === undefined || v === null || v === "" || rows >= 18) continue;
+      const tr = document.createElement("tr");
+      const td1 = document.createElement("td"); td1.textContent = id;
+      const td2 = document.createElement("td"); td2.textContent = String(v);
+      tr.append(td1, td2); table.appendChild(tr); rows++;
+    }
+    $("info").style.display = rows ? "block" : "none";
+  }
+}, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+$("infoClose").onclick = () => $("info").style.display = "none";
+
+// ---- コインラリー（ゲームのプロトタイプ）----
+const COIN_SPOTS = [
+  [139.7005, 35.6907], [139.7014, 35.6917], [139.6997, 35.6893],
+  [139.7021, 35.6935], [139.7033, 35.6944],
+  [139.6957, 35.6917], [139.6938, 35.6908], [139.6929, 35.6897], [139.6946, 35.6929],
+  [139.7002, 35.6877], [139.6993, 35.6866],
+  [139.7076, 35.6874], [139.7051, 35.6885],
+  [139.7042, 35.6905], [139.7060, 35.6920],
+];
+let gameOn = false, coins = [], coinEntities = [], collected = 0, gameStart = 0;
+let audioCtx = null;
+function beep(freq, dur = 0.12) {
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.frequency.value = freq; o.type = "triangle";
+    g.gain.setValueAtTime(0.15, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(); o.stop(audioCtx.currentTime + dur);
+  } catch (_) {}
+}
+
+async function startGame() {
+  stopGame();
+  gameOn = true; collected = 0; gameStart = performance.now();
+  $("game").style.display = "block";
+  $("coinTotal").textContent = COIN_SPOTS.length;
+  $("coinCount").textContent = "0";
+
+  const cartos = COIN_SPOTS.map(([lon, lat]) => Cesium.Cartographic.fromDegrees(lon, lat));
+  let heights = cartos.map(() => groundH());
+  try {
+    if (tileset) {
+      const updated = await scene.sampleHeightMostDetailed(cartos.map(c => c.clone()));
+      heights = updated.map((c, i) => (c && isFinite(c.height)) ? c.height : heights[i]);
+    }
+  } catch (_) {}
+
+  coins = COIN_SPOTS.map(([lon, lat], i) => {
+    const pos = Cesium.Cartesian3.fromDegrees(lon, lat, heights[i] + 2.5);
+    const ent = viewer.entities.add({
+      position: pos,
+      point: { pixelSize: 16, color: Cesium.Color.GOLD, outlineColor: Cesium.Color.WHITE, outlineWidth: 2 },
+      label: {
+        text: "🪙", font: "22px sans-serif", pixelOffset: new Cesium.Cartesian2(0, -22),
+        disableDepthTestDistance: 0,
+      },
+    });
+    coinEntities.push(ent);
+    return { pos, ent, got: false };
+  });
+  status("コインラリー開始！新宿の街で15枚のコインを探そう 🪙");
+  if (!walking) setWalking(true);
+}
+function stopGame() {
+  gameOn = false;
+  for (const c of coins) viewer.entities.remove(c.ent);
+  coins = []; coinEntities = [];
+  $("game").style.display = "none";
+}
+$("btnGame").onclick = startGame;
+$("btnGameStop").onclick = stopGame;
+
+function stepGame() {
+  const t = Math.floor((performance.now() - gameStart) / 1000);
+  $("gameTime").textContent = `${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}`;
+  const p = camera.position;
+  for (const c of coins) {
+    if (c.got) continue;
+    if (Cesium.Cartesian3.distance(p, c.pos) < 18) {
+      c.got = true; collected++;
+      viewer.entities.remove(c.ent);
+      $("coinCount").textContent = collected;
+      beep(880 + collected * 40);
+      if (collected === coins.length) {
+        beep(1320, 0.3); setTimeout(() => beep(1760, 0.4), 180);
+        status(`🎉 全コイン獲得！タイム ${$("gameTime").textContent} — おつかれさまでした！`, true);
+        gameOn = false;
+      }
+    }
+  }
+}
+
+// ---- HUD開閉 ----
+$("toggleHud").onclick = () => {
+  const h = $("hud");
+  h.style.display = h.style.display === "none" ? "block" : "none";
+};
+if (matchMedia("(max-width: 700px)").matches) $("toggleHud").style.display = "block";
+
+// ---- 起動 ----
+(function init() {
+  const q = localStorage.getItem("sjk_quality") || "notex";
+  $("quality").value = TILESETS[q] ? q : "notex";
+  neon = localStorage.getItem("sjk_neon") === "1";
+  applyStyle();
+  camera.setView({
+    destination: Cesium.Cartesian3.fromDegrees(139.7040, 35.6790, groundH() + 1400),
+    orientation: { heading: Cesium.Math.toRadians(-20), pitch: Cesium.Math.toRadians(-38), roll: 0 },
+  });
+  loadTileset(TILESETS[$("quality").value])
+    .then(() => flyToPoi(POIS[3], false))
+    .catch(() => {});
+})();
+</script>
+</body>
+</html>
